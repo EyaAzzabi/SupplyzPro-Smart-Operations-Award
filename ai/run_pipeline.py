@@ -11,18 +11,18 @@
 Writes results/results_before.json, results/results_after.json, and
 results/regression_probes.json for the Streamlit dashboard to read.
 
-Run: python -m pipeline.run_pipeline
+Run: python -m ai.run_pipeline
 """
 
 import json
 from pathlib import Path
 
-from pipeline.behavioral import run_behavioral
-from pipeline.cluster import cluster_instances
-from pipeline.llm_judge import run_llm_judge
-from pipeline.prioritize import prioritize
-from pipeline.regression_probes import generate_and_run_probes
-from pipeline.rules import run_rule_based
+from ai.behavioral import run_behavioral
+from ai.cluster import cluster_instances
+from ai.llm_judge import run_llm_judge
+from ai.prioritize import prioritize
+from ai.regression_probes import generate_and_run_probes
+from ai.rules import run_rule_based
 
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"

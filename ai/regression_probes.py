@@ -15,9 +15,9 @@ from data.generate_conversations import (
     gen_user_frustration,
     gen_wrong_tool_or_target,
 )
-from pipeline.behavioral import run_behavioral
-from pipeline.llm_judge import run_llm_judge
-from pipeline.rules import run_rule_based
+from ai.behavioral import run_behavioral
+from ai.llm_judge import run_llm_judge
+from ai.rules import run_rule_based
 
 GENERATORS = {
     "retry_loop_duplicate_order": lambda rng, cid: gen_retry_loop_duplicate_order(rng, cid, fixed=False),
