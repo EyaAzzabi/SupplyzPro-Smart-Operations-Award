@@ -32,7 +32,8 @@ def detect_silent_tool_failure(conversation):
             # specific failure category (see detect_retry_loop_duplicate_order)
             # rather than a generic silent failure.
             continue
-        response = call.get("response") or {}
+        response = call.get("response")
+        response = response if isinstance(response, dict) else {}
         errored = call.get("error_code") is not None or response.get("success") is False
         if not errored:
             continue
