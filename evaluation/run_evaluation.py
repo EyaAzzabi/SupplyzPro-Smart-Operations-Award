@@ -14,11 +14,9 @@ import json
 import time
 from pathlib import Path
 
-from ai.behavioral import run_behavioral
 from ai.cluster import cluster_instances
-from ai.llm_judge import run_llm_judge
+from ai.failure_detective import detect_failures
 from ai.prioritize import prioritize
-from ai.rules import run_rule_based
 
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
@@ -26,7 +24,7 @@ RESULTS_DIR = Path(__file__).parent / "results"
 
 
 def detect_all(conversation):
-    return run_rule_based(conversation) + run_llm_judge(conversation) + run_behavioral(conversation)
+    return detect_failures(conversation)
 
 
 def failure_detection_precision_recall(conversations, instances_by_conv):

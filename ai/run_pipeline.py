@@ -17,12 +17,10 @@ Run: python -m ai.run_pipeline
 import json
 from pathlib import Path
 
-from ai.behavioral import run_behavioral
 from ai.cluster import cluster_instances
-from ai.llm_judge import run_llm_judge
+from ai.failure_detective import detect_failures
 from ai.prioritize import prioritize
 from ai.regression_probes import generate_and_run_probes
-from ai.rules import run_rule_based
 from ai.trace_investigator import normalize_traces
 
 ROOT = Path(__file__).parent.parent
@@ -31,7 +29,7 @@ RESULTS_DIR = ROOT / "results"
 
 
 def detect_all(conversation):
-    return run_rule_based(conversation) + run_llm_judge(conversation) + run_behavioral(conversation)
+    return detect_failures(conversation)
 
 
 def process_batch(conversations):

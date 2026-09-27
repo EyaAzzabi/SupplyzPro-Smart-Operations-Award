@@ -16,9 +16,7 @@ from data.generate_conversations import (
     gen_user_frustration,
     gen_wrong_tool_or_target,
 )
-from ai.behavioral import run_behavioral
-from ai.llm_judge import run_llm_judge
-from ai.rules import run_rule_based
+from ai.failure_detective import detect_failures
 
 GENERATORS = {
     "retry_loop_duplicate_order": lambda rng, cid: gen_retry_loop_duplicate_order(rng, cid, fixed=False),
@@ -32,7 +30,7 @@ GENERATORS = {
 
 
 def detect_all(conversation):
-    return run_rule_based(conversation) + run_llm_judge(conversation) + run_behavioral(conversation)
+    return detect_failures(conversation)
 
 
 def generate_and_run_probes(failure_type, n=5, seed=999):

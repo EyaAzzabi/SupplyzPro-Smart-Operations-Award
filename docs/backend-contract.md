@@ -69,6 +69,10 @@ The example is abbreviated; real conversation turns and evidence are preserved i
 
 `normalize_traces` accepts a list of records. It is called by the pipeline before detection so downstream agents always receive the canonical conversation shape. A caller can supply `default_workflow` for raw records; Tau-Bench `traj` records default to `retail_customer_service`, and other missing workflows become `unknown`.
 
+## Failure Detective output
+
+`ai.failure_detective.detect_failures` runs the rule-based, LLM-judge, and behavioral layers in that order. It returns each detector finding unchanged, using the failure-instance shape (`conversation_id`, `workflow`, `detector`, `failure_type`, `description`, `evidence_turn_ids`). Before returning, it checks that every finding has the required fields and that its evidence turn IDs exist in the input conversation. It never reorders, renumbers, or replaces those IDs.
+
 `results/regression_probes.json` identifies the tested baseline cluster explicitly:
 
 ```json
