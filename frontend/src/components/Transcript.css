@@ -1,0 +1,159 @@
+.transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.95rem 1rem 1.05rem;
+  background: #f8fafc;
+  border-top: 1px solid #eef2f7;
+}
+
+.turn-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.turn-row--user {
+  align-items: flex-start;
+}
+
+.turn-row--agent {
+  align-items: flex-end;
+}
+
+.turn-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0 0.15rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.turn-role {
+  font-weight: 700;
+}
+
+.turn-id {
+  font-variant-numeric: tabular-nums;
+}
+
+.turn-flag {
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+.turn-bubble {
+  max-width: 78%;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.turn-row--user .turn-bubble {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  border-bottom-left-radius: 4px;
+  color: #334155;
+}
+
+.turn-row--agent .turn-bubble {
+  background: #eef2ff;
+  border-color: #e0e7ff;
+  border-bottom-right-radius: 4px;
+  color: #1e1b4b;
+}
+
+.turn-row.is-evidence .turn-bubble {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #7f1d1d;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.12);
+}
+
+.tool-call {
+  width: 100%;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+.tool-call-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.4rem 0.65rem;
+  background: #1e293b;
+  font-size: 0.72rem;
+}
+
+.tool-call-name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.tool-call-error {
+  padding: 0.05rem 0.4rem;
+  border-radius: 4px;
+  background: #7f1d1d;
+  color: #fee2e2;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.tool-call-latency {
+  margin-left: auto;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+.tool-call-body {
+  margin: 0;
+  padding: 0.6rem 0.7rem 0.7rem;
+  color: #cbd5e1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+  .transcript {
+    gap: 0.75rem;
+    padding: 0.8rem 0.75rem 0.9rem;
+  }
+
+  .turn-row--user,
+  .turn-row--agent {
+    align-items: stretch;
+  }
+
+  .turn-head {
+    padding: 0;
+    font-size: 0.7rem;
+  }
+
+  .turn-bubble {
+    max-width: 100%;
+    font-size: 0.92rem;
+  }
+
+  .tool-call-body {
+    font-size: 0.72rem;
+  }
+}

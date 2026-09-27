@@ -1,0 +1,269 @@
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.breadcrumb ol {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.breadcrumb li[aria-current="page"] {
+  font-weight: 600;
+  color: #475569;
+}
+
+.breadcrumb-sep {
+  display: inline-flex;
+  color: #cbd5e1;
+}
+
+.page-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  margin-top: 0.6rem;
+}
+
+.page-header-text {
+  min-width: 0;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.page-subtitle {
+  margin: 0.3rem 0 0;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.page-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.header-menu {
+  position: relative;
+}
+
+.period-button,
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 40px;
+  padding: 0 0.85rem;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.period-button {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+}
+
+.period-button:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.period-button svg:last-child {
+  color: #94a3b8;
+}
+
+.upload-button {
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #ffffff;
+  box-shadow: 0 10px 22px -14px rgba(99, 102, 241, 0.95);
+}
+
+.upload-button:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+}
+
+.period-button:focus-visible,
+.upload-button:focus-visible,
+.header-menu-option:focus-visible,
+.header-pop-close:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.header-menu-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  min-width: 172px;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 18px 40px -20px rgba(15, 23, 42, 0.45);
+  animation: header-menu-in 0.14s ease both;
+}
+
+@keyframes header-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.header-menu-option {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  font-family: inherit;
+  font-size: 0.83rem;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+}
+
+.header-menu-option:hover {
+  background: #f1f5f9;
+}
+
+.header-menu-option.is-selected {
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 600;
+}
+
+.header-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  width: 268px;
+  padding: 0.85rem 0.95rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 18px 40px -20px rgba(15, 23, 42, 0.45);
+  animation: header-menu-in 0.14s ease both;
+}
+
+.header-pop-title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.header-pop-text {
+  margin: 0.3rem 0 0.7rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.header-pop-close {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  background: #f8fafc;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+}
+
+.header-pop-close:hover {
+  background: #eef2f7;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .page-header-actions {
+    width: 100%;
+  }
+
+  .period-button,
+  .upload-button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .header-menu-list,
+  .header-pop {
+    right: auto;
+    left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-menu {
+    width: 100%;
+  }
+
+  .period-button,
+  .upload-button {
+    width: 100%;
+    height: 44px;
+  }
+
+  .header-menu-list,
+  .header-pop {
+    right: 0;
+    left: 0;
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-menu-list,
+  .header-pop {
+    animation: none;
+  }
+}
