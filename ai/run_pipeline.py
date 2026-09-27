@@ -23,6 +23,7 @@ from ai.llm_judge import run_llm_judge
 from ai.prioritize import prioritize
 from ai.regression_probes import generate_and_run_probes
 from ai.rules import run_rule_based
+from ai.trace_investigator import normalize_traces
 
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
@@ -48,8 +49,8 @@ def build_evidence_index(conversations):
 def main():
     RESULTS_DIR.mkdir(exist_ok=True)
 
-    before = json.loads((DATA_DIR / "conversations_before.json").read_text())
-    after = json.loads((DATA_DIR / "conversations_after.json").read_text())
+    before = normalize_traces(json.loads((DATA_DIR / "conversations_before.json").read_text()))
+    after = normalize_traces(json.loads((DATA_DIR / "conversations_after.json").read_text()))
 
     clusters_before = process_batch(before)
     clusters_after = process_batch(after)

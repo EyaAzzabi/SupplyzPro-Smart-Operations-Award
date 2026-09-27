@@ -63,6 +63,12 @@ Regression probes are attached to the baseline cluster they test. Their `batch_i
 
 The example is abbreviated; real conversation turns and evidence are preserved in the generated files.
 
+## Trace Investigator input
+
+`ai.trace_investigator.normalize_trace` accepts either an already-canonical conversation with `turns`, or a raw chat trace with `messages` or Tau-Bench's `traj`. Raw chat roles `assistant` and `human` become `agent` and `user`; system/developer messages are omitted. Assistant tool calls and their tool replies are joined into one canonical agent turn by call ID. JSON arguments/responses are parsed; unparseable values are retained under `raw_arguments` or `text` rather than discarded. An unmatched tool reply or invalid turn structure raises `TraceFormatError` so ingestion can report the bad trace.
+
+`normalize_traces` accepts a list of records. It is called by the pipeline before detection so downstream agents always receive the canonical conversation shape. A caller can supply `default_workflow` for raw records; Tau-Bench `traj` records default to `retail_customer_service`, and other missing workflows become `unknown`.
+
 `results/regression_probes.json` identifies the tested baseline cluster explicitly:
 
 ```json
