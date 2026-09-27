@@ -1,6 +1,32 @@
-# X-Ray
+<p align="center">
+  <img src="docs/logo.png" alt="X-Ray logo" width="120" />
+</p>
 
-**Finding the Hidden Failures** — sees through a confident-sounding agent response to what the tool actually returned. Built for SupplyzPro's "Come Build with AI" hackathon challenge.
+<h1 align="center">X-Ray</h1>
+<p align="center"><strong>Finding the Hidden Failures in AI-Agent Conversations</strong></p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+" />
+  <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React 18" />
+  <img src="https://img.shields.io/badge/FastAPI-backend-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/SQLite-database-07405E?logo=sqlite&logoColor=white" alt="SQLite" />
+  <img src="https://img.shields.io/badge/tests-28%20passing-brightgreen" alt="28 tests passing" />
+</p>
+
+<p align="center">
+  Built for SupplyzPro's <em>Smart Operations Award</em> — "Come Build with AI" hackathon challenge
+</p>
+
+<p align="center">
+  <a href="#architecture">Architecture</a> ·
+  <a href="#setup">Setup</a> ·
+  <a href="#running-the-full-stack">Run it</a> ·
+  <a href="#testing">Tests</a> ·
+  <a href="#evaluation">Evaluation</a> ·
+  <a href="docs/backend-contract.md">API docs</a>
+</p>
+
+---
 
 > We don't just find bugs in AI-agent conversations — we group them by root cause, rank them by real impact, and prove a fix works.
 
@@ -46,16 +72,17 @@ Everyone can start immediately — the layers are already wired together end to 
 - Today: add more variety (more SKUs/suppliers/phrasing) so the demo doesn't look templated. Regenerate with `python data/generate_conversations.py`.
 
 **3. Database** — `database/`
-- `schema.sql` (conversations, clusters, failure_instances, regression_probes tables), `seed_db.py` (loads `results/*.json` into `xray.db`).
+- `schema.sql` (conversations, turns, tool_calls, clusters, failure_instances, priority_scores, root_causes, regression_probes tables), `seed_db.py` (loads `results/*.json` into `xray.db`).
 - Today: own the schema — extend it if the AI or backend teams need new fields. Re-seed with `python -m database.seed_db` any time `results/` changes.
 
 **4. Backend** — `backend/`
-- `main.py` — FastAPI app: `/api/summary`, `/api/clusters`, `/api/clusters/{id}/evidence`, `/api/clusters/{id}/analysis` (root cause/impact/remediation), `/api/fix-comparison`.
-- Today: harden/extend endpoints as the frontend needs them. Run with `uvicorn backend.main:app --reload --port 8000`; interactive docs at `/docs`.
+- `main.py` — FastAPI app, 12 endpoints: summary, clusters, priority, evidence, analysis (root cause/impact/remediation), root-cause, fix-comparison (legacy + cluster-scoped), conversations, failures, evaluation. Full shapes documented in `docs/backend-contract.md`.
+- Run with `uvicorn backend.main:app --reload --port 8000`; interactive docs at `/docs`.
 
 **5. Frontend** — `frontend/`
-- React + Vite app in `frontend/src/`: `ClusterTable`, `EvidencePanel`, `Transcript`, `ClusterAnalysis`, `FixComparison` components, wired to the backend via `src/api.js`.
-- Today: this is a working skeleton, not a finished UI — own the visual design, empty/loading states, and polish. Run with `npm run dev` inside `frontend/` (copy `.env.example` to `.env` first).
+- React + Vite dashboard in `frontend/src/`: `Layout`/`Header`/`Tabs`/`SkeletonLoader` for the shell, `StatsCards`/`FailureFamiliesChart`/`FailureTrendChart` for the overview, `ClusterTable`/`EvidencePanel`/`Transcript`/`ClusterAnalysis`/`FixComparison` for the analysis views, all fetched through shared hooks in `src/hooks/useXrayData.js` and `src/api.js`.
+- Five pages: Dashboard, Failure Clusters, Trace Explorer, Replay Lab, Evaluation.
+- Run with `npm run dev` inside `frontend/` (copy `.env.example` to `.env` first).
 
 ## Setup
 
@@ -90,6 +117,13 @@ cd frontend && npm run dev
 `data/*.json`, `results/*.json`, and `database/xray.db` are all committed, so steps 4-5 work immediately without re-running 1-3 — only re-run them if you change the generator or detection logic.
 
 **Fallback demo path**: `streamlit run app.py` reads `results/*.json` directly and needs nothing else running — useful if the full stack isn't up yet during the demo.
+
+## Deployment
+
+Two paths, pick based on how much time you have:
+
+- **Zero-setup (Streamlit)** — deploy `app.py` to [Streamlit Community Cloud](https://share.streamlit.io): point it at this repo, `main` branch, `app.py` as the entry file. Reads the committed `results/*.json` directly, no backend or database to stand up. **Set sharing to "This app is public"** in the app's Settings → Sharing — it's private by default, which blocks anyone without your Streamlit account from opening the link.
+- **Full stack (React dashboard)** — backend on [Render](https://render.com) (build: `pip install -r requirements.txt`, start: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`), frontend on [Vercel](https://vercel.com) with Root Directory set to `frontend` and `VITE_API_BASE_URL` pointed at the Render URL. `.vercelignore` and `frontend/vercel.json` are already committed so Vercel treats this as a plain static Vite build and doesn't try to auto-detect the Python files elsewhere in the repo as serverless functions.
 
 ## Testing
 
