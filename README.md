@@ -28,6 +28,16 @@
 
 ---
 
+<p align="center">
+  <a href="docs/video_demo.mp4">
+    <img src="docs/logo.png" alt="Watch the demo video" width="90" />
+    <br />
+    <strong>▶ Watch the 90-second demo video</strong>
+  </a>
+</p>
+
+---
+
 > We don't just find bugs in AI-agent conversations — we group them by root cause, rank them by real impact, and prove a fix works.
 
 ## The problem
