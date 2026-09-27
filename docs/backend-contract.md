@@ -21,9 +21,9 @@ Regression probes are attached to the baseline cluster they test. Their `batch_i
       "failure_type": "retry_loop_duplicate_order",
       "label": "Retry-loop duplicate orders (no idempotency check)",
       "frequency": 10,
-      "severity": 5,
-      "blast_radius": 2,
-      "priority_score": 100,
+      "severity": 3,
+      "blast_radius": 1,
+      "priority_score": 30,
       "workflows_touched": ["purchase_order"],
       "instances": [
         {
@@ -31,7 +31,7 @@ Regression probes are attached to the baseline cluster they test. Their `batch_i
           "workflow": "purchase_order",
           "detector": "rule:retry_loop_duplicate_order",
           "failure_type": "retry_loop_duplicate_order",
-          "description": "Two matching order calls produced separate order IDs.",
+          "description": "'create_purchase_order' was called twice for the same 150 units of SKU-1007 after a timeout, producing two separate orders (PO-98696 and PO-81482) with no idempotency check.",
           "evidence_turn_ids": [2, 3]
         }
       ]
