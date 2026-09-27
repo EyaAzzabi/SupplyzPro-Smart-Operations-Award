@@ -2,7 +2,6 @@ import { useState } from "react";
 import Header from "./components/Header";
 import Layout from "./components/Layout";
 import DashboardPage from "./components/pages/DashboardPage";
-import DatasetsPage from "./components/pages/DatasetsPage";
 import EvaluationPage from "./components/pages/EvaluationPage";
 import FailureClustersPage from "./components/pages/FailureClustersPage";
 import ReplayLabPage from "./components/pages/ReplayLabPage";
@@ -34,13 +33,6 @@ const PAGES = {
     title: "Replay Lab",
     subtitle: "Test mitigations and verify fixes before deploying to production.",
   },
-  datasets: {
-    component: DatasetsPage,
-    label: "Datasets",
-    title: "Datasets",
-    subtitle: "Datasets",
-    placeholder: true,
-  },
   evaluation: {
     component: EvaluationPage,
     label: "Evaluation",
@@ -65,9 +57,7 @@ export default function App() {
       ? { onSelectCluster: openCluster }
       : activePage === "failure-clusters"
         ? { selectedId: selectedClusterId, onSelect: setSelectedClusterId }
-        : page.placeholder
-          ? { onBack: () => setActivePage("dashboard") }
-          : {};
+        : {};
 
   return (
     <Layout activePage={activePage} onNavigate={setActivePage}>

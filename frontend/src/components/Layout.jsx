@@ -41,16 +41,6 @@ function FlaskIcon() {
   );
 }
 
-function DatabaseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <ellipse cx="12" cy="6" rx="7" ry="3" />
-      <path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6" />
-      <path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" />
-    </svg>
-  );
-}
-
 function TrendIcon() {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -68,12 +58,6 @@ const NAV_GROUPS = [
       { page: "failure-clusters", label: "Failure clusters", icon: ClusterIcon },
       { page: "trace-explorer", label: "Trace explorer", icon: ChartIcon },
       { page: "replay-lab", label: "Replay lab", icon: FlaskIcon },
-    ],
-  },
-  {
-    heading: "System",
-    items: [
-      { page: "datasets", label: "Datasets", icon: DatabaseIcon },
       { page: "evaluation", label: "Evaluation", icon: TrendIcon },
     ],
   },
