@@ -120,10 +120,7 @@ cd frontend && npm run dev
 
 ## Deployment
 
-Two paths, pick based on how much time you have:
-
-- **Zero-setup (Streamlit)** — deploy `app.py` to [Streamlit Community Cloud](https://share.streamlit.io): point it at this repo, `main` branch, `app.py` as the entry file. Reads the committed `results/*.json` directly, no backend or database to stand up. **Set sharing to "This app is public"** in the app's Settings → Sharing — it's private by default, which blocks anyone without your Streamlit account from opening the link.
-- **Full stack (React dashboard)** — backend on [Render](https://render.com) (build: `pip install -r requirements.txt`, start: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`), frontend on [Vercel](https://vercel.com) with Root Directory set to `frontend` and `VITE_API_BASE_URL` pointed at the Render URL. `.vercelignore` and `frontend/vercel.json` are already committed so Vercel treats this as a plain static Vite build and doesn't try to auto-detect the Python files elsewhere in the repo as serverless functions.
+Deploy `app.py` to [Streamlit Community Cloud](https://share.streamlit.io): point it at this repo, `main` branch, `app.py` as the entry file. Reads the committed `results/*.json` directly, no backend or database to stand up. **Set sharing to "This app is public"** in the app's Settings → Sharing — it's private by default, which blocks anyone without your Streamlit account from opening the link.
 
 ## Testing
 
