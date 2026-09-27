@@ -64,6 +64,33 @@ Regression probes are attached to the baseline cluster they test. Their `batch_i
 
 The example is abbreviated; real conversation turns and evidence are preserved in the generated files.
 
+## Member 2 graph handoff
+
+Run `python -m ai.run_pipeline` to generate `results/agent_1_3_output.json`. This deterministic, versioned artifact is the integration input for Member 2's graph; the existing separate result files remain available to the API and database seeder.
+
+```json
+{
+  "artifact_type": "xray.agent_1_3_output",
+  "schema_version": 1,
+  "producer_stages": ["trace_investigator", "failure_detective", "pattern_hunter"],
+  "batches": {
+    "before": {
+      "batch_id": "before",
+      "total_conversations": 60,
+      "clusters": [],
+      "conversations_by_id": {}
+    },
+    "after": {
+      "batch_id": "after",
+      "total_conversations": 60,
+      "clusters": []
+    }
+  }
+}
+```
+
+Clusters use the existing ranked cluster shape and include `batch_id`; findings and evidence turn IDs remain nested in each cluster's `instances`. The `before` batch includes full conversations for evidence lookup. The `after` batch intentionally contains cluster summaries only. Treat identity as `(batch_id, cluster_id)` and compare failure categories across batches by `failure_type`.
+
 ## Trace Investigator input
 
 `ai.trace_investigator.normalize_trace` accepts either an already-canonical conversation with `turns`, or a raw chat trace with `messages` or Tau-Bench's `traj`. Raw chat roles `assistant` and `human` become `agent` and `user`; system/developer messages are omitted. Assistant tool calls and their tool replies are joined into one canonical agent turn by call ID. JSON arguments/responses are parsed; unparseable values are retained under `raw_arguments` or `text` rather than discarded. An unmatched tool reply or invalid turn structure raises `TraceFormatError` so ingestion can report the bad trace.

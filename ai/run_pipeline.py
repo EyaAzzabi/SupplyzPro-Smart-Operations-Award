@@ -26,6 +26,7 @@ from ai.trace_investigator import normalize_traces
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
 RESULTS_DIR = ROOT / "results"
+AGENT_OUTPUT_PATH = RESULTS_DIR / "agent_1_3_output.json"
 
 
 def detect_all(conversation):
@@ -42,6 +43,28 @@ def process_batch(conversations, batch_id):
 
 def build_evidence_index(conversations):
     return {c["conversation_id"]: c for c in conversations}
+
+
+def build_agent_1_3_artifact(before_clusters, after_clusters, before, after):
+    """Build the versioned handoff consumed by Member 2's analysis graph."""
+    return {
+        "artifact_type": "xray.agent_1_3_output",
+        "schema_version": 1,
+        "producer_stages": ["trace_investigator", "failure_detective", "pattern_hunter"],
+        "batches": {
+            "before": {
+                "batch_id": "before",
+                "total_conversations": len(before),
+                "clusters": before_clusters,
+                "conversations_by_id": build_evidence_index(before),
+            },
+            "after": {
+                "batch_id": "after",
+                "total_conversations": len(after),
+                "clusters": after_clusters,
+            },
+        },
+    }
 
 
 def main():
@@ -65,6 +88,9 @@ def main():
         "clusters": clusters_after,
         "total_conversations": len(after),
     }, indent=2))
+
+    artifact = build_agent_1_3_artifact(clusters_before, clusters_after, before, after)
+    AGENT_OUTPUT_PATH.write_text(json.dumps(artifact, indent=2))
 
     if clusters_before:
         top_failure_type = clusters_before[0]["failure_type"]
