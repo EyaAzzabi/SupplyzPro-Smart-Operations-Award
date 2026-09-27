@@ -45,8 +45,7 @@ const PAGES = {
     component: EvaluationPage,
     label: "Evaluation",
     title: "Evaluation",
-    subtitle: "Model metrics",
-    placeholder: true,
+    subtitle: "Precision, recall, and real-world validation results for the detector.",
   },
 };
 

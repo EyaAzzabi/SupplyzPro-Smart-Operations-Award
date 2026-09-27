@@ -16,4 +16,5 @@ export const api = {
   clusterAnalysis: (clusterId, batch = "before") =>
     get(`/api/clusters/${clusterId}/analysis?batch=${batch}`),
   fixComparison: () => get("/api/fix-comparison"),
+  evaluation: () => get("/api/evaluation"),
 };

@@ -84,6 +84,15 @@
   gap: 1rem;
 }
 
+.chart-body--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
 .donut-wrap {
   position: relative;
   flex: 1 1 auto;

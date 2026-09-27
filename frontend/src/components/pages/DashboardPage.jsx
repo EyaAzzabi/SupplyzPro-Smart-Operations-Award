@@ -62,8 +62,8 @@ export default function DashboardPage({ onSelectCluster }) {
 
       <section className="charts-section">
         <div className="charts-grid">
-          <FailureTrendChart />
-          <FailureFamiliesChart />
+          <FailureTrendChart clusters={clusters} />
+          <FailureFamiliesChart clusters={clusters} />
         </div>
       </section>
 

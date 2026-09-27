@@ -16,6 +16,7 @@ from ai.remediation import recommend_remediation
 from ai.root_cause import analyze_root_cause
 
 DB_PATH = Path(__file__).parent.parent / "database" / "xray.db"
+EVALUATION_DIR = Path(__file__).parent.parent / "evaluation" / "results"
 
 app = FastAPI(title="X-Ray API")
 
@@ -330,6 +331,22 @@ def get_failures(batch: str = "before"):
         }
         for r in rows
     ]
+
+
+@app.get("/api/evaluation")
+def get_evaluation():
+    synthetic_path = EVALUATION_DIR / "metrics.json"
+    real_world_path = EVALUATION_DIR / "real_world_metrics.json"
+    if not synthetic_path.exists():
+        raise HTTPException(status_code=503, detail="Evaluation not run yet. Run `python -m evaluation.run_evaluation`.")
+
+    synthetic = json.loads(synthetic_path.read_text())
+    real_world = None
+    if real_world_path.exists():
+        rw = json.loads(real_world_path.read_text())
+        real_world = {k: v for k, v in rw.items() if k != "conversations"}
+
+    return {"synthetic": synthetic, "real_world": real_world}
 
 
 @app.get("/api/health")
