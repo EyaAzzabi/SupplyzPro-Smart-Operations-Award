@@ -1,0 +1,24 @@
+{
+  "conversation_id": "mock_normal_001",
+  "workflow": "inventory_check",
+  "failure_type": null,
+  "turns": [
+    {
+      "turn_id": 1,
+      "role": "user",
+      "text": "How many units of SKU-1000 do we have?"
+    },
+    {
+      "turn_id": 2,
+      "role": "agent",
+      "text": "There are 8 units of SKU-1000 in stock.",
+      "tool_call": {
+        "tool_name": "check_inventory",
+        "parameters": {"sku": "SKU-1000"},
+        "response": {"sku": "SKU-1000", "quantity": 8, "warehouse": "WH-1"},
+        "latency_ms": 120,
+        "error_code": null
+      }
+    }
+  ]
+}

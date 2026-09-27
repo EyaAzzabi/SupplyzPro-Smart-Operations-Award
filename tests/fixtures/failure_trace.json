@@ -1,0 +1,24 @@
+{
+  "conversation_id": "mock_failure_001",
+  "workflow": "inventory_check",
+  "failure_type": "silent_tool_failure",
+  "turns": [
+    {
+      "turn_id": 1,
+      "role": "user",
+      "text": "How many units of SKU-1000 do we have?"
+    },
+    {
+      "turn_id": 2,
+      "role": "agent",
+      "text": "There are 8 units of SKU-1000 in stock.",
+      "tool_call": {
+        "tool_name": "check_inventory",
+        "parameters": {"sku": "SKU-1000"},
+        "response": {"success": false, "reason": "inventory_service_unavailable"},
+        "latency_ms": 5000,
+        "error_code": "service_unavailable"
+      }
+    }
+  ]
+}
