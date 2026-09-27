@@ -135,10 +135,36 @@ section h2 {
   overflow-x: auto;
 }
 
-.fix-comparison {
+.fix-comparison,
+.cluster-analysis {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 1.2rem;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.analysis-grid h4,
+.cluster-analysis h4 {
+  margin-bottom: 0.4rem;
+}
+
+.analysis-grid ul,
+.cluster-analysis ul {
+  margin: 0.3rem 0 0.8rem;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .bars {

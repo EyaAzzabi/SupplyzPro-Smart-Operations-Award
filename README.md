@@ -6,12 +6,13 @@
 
 ## The problem
 
-Most agent failures never throw an error. A tool call "succeeds" with an empty or wrong result, the agent smooths it over with a confident sentence, and the only trace is a customer getting the wrong answer. X-Ray finds that gap between what a tool returned and what the agent claimed — not just counts of exceptions.
+Most agent failures never throw an error. A tool call "succeeds" with an empty or wrong result, the agent smooths it over with a confident sentence, and the only trace is a customer getting the wrong answer. X-Ray finds that gap between what a tool returned and what the agent claimed — not just counts of exceptions. It doesn't stop at "here's what went wrong": for every cluster it also explains *why* (a causal chain, not a guess), what it costs operationally, and what engineering fix would actually address it — see `ai/root_cause.py`, `ai/impact.py`, `ai/remediation.py`, assembled by `ai/executive_report.py` into `results/executive_report.md`.
 
 ## Architecture
 
 ```
-ai/          The AI system: detection, clustering, prioritization, regression probes
+ai/          The AI system: detection, clustering, prioritization, root cause,
+             impact, remediation, executive report, regression probes
 data/        Synthetic conversation generator (feeds the AI system)
 results/     ai/ layer's JSON output, consumed by database/seed_db.py
 evaluation/  Computes the required metrics against ground truth -> evaluation/results/
@@ -21,6 +22,8 @@ frontend/    React (Vite) — the dashboard
 app.py       Streamlit dashboard (kept as a zero-setup fallback demo)
 ```
 
+**Why root cause/impact/remediation are deterministic, not LLM-generated:** we constructed the failure taxonomy ourselves, so the causal chain, operational risk, and standard fix for each of the 7 failure types are known facts (`ai/root_cause.py`'s `CAUSAL_CHAINS`, `ai/impact.py`'s `POTENTIAL_IMPACT`, `ai/remediation.py`'s `REMEDIATIONS`), not something requiring inference. This keeps them fast, testable, and honest about confidence (`observed` / `strongly_supported` / `likely` / `possible`, never overclaiming) — an LLM call would add latency and hallucination risk for zero benefit here. The LLM is reserved for `ai/llm_judge.py`, where semantic comparison genuinely can't be done with a lookup table.
+
 Data flow: `data/` generates conversations → `ai/` detects/clusters/prioritizes them into `results/*.json` → `database/seed_db.py` loads that into SQLite → `backend/` serves it over REST → `frontend/` renders it. `evaluation/` runs the same AI layer against ground truth separately, to score it rather than just run it.
 
 ## Team task split (5 people, work in parallel)
@@ -28,7 +31,7 @@ Data flow: `data/` generates conversations → `ai/` detects/clusters/prioritize
 Everyone can start immediately — the layers are already wired together end to end with synthetic data, so no one is blocked waiting on anyone else. Pull latest, then work in your own folder.
 
 **1. AI/Detection** — `ai/`
-- `rules.py` (error codes, timeouts, retry-loop duplicate calls), `llm_judge.py` (hallucination + wrong-target detection), `behavioral.py` (context collapse, user frustration), `cluster.py` (TF-IDF/KMeans root-cause grouping), `prioritize.py` (the scoring formula), `regression_probes.py` (fix verification).
+- `rules.py` (error codes, timeouts, retry-loop duplicate calls), `llm_judge.py` (hallucination + wrong-target detection), `behavioral.py` (context collapse, user frustration), `cluster.py` (TF-IDF/KMeans root-cause grouping), `prioritize.py` (the scoring formula), `root_cause.py` / `impact.py` / `remediation.py` (why it happens, what it costs, how to fix it), `executive_report.py` (assembles all of it), `regression_probes.py` (fix verification).
 - Today: set `NVIDIA_API_KEY` in `.env` (see `.env.example`) so `llm_judge.py` calls a real NVIDIA NIM model instead of the offline fallback heuristic. Sanity-check detection quality; tune clustering if categories look muddy. Re-run with `python -m ai.run_pipeline`.
 
 **2. Data** — `data/`
@@ -40,11 +43,11 @@ Everyone can start immediately — the layers are already wired together end to 
 - Today: own the schema — extend it if the AI or backend teams need new fields. Re-seed with `python -m database.seed_db` any time `results/` changes.
 
 **4. Backend** — `backend/`
-- `main.py` — FastAPI app: `/api/summary`, `/api/clusters`, `/api/clusters/{id}/evidence`, `/api/fix-comparison`.
+- `main.py` — FastAPI app: `/api/summary`, `/api/clusters`, `/api/clusters/{id}/evidence`, `/api/clusters/{id}/analysis` (root cause/impact/remediation), `/api/fix-comparison`.
 - Today: harden/extend endpoints as the frontend needs them. Run with `uvicorn backend.main:app --reload --port 8000`; interactive docs at `/docs`.
 
 **5. Frontend** — `frontend/`
-- React + Vite app in `frontend/src/`: `ClusterTable`, `EvidencePanel`, `Transcript`, `FixComparison` components, wired to the backend via `src/api.js`.
+- React + Vite app in `frontend/src/`: `ClusterTable`, `EvidencePanel`, `Transcript`, `ClusterAnalysis`, `FixComparison` components, wired to the backend via `src/api.js`.
 - Today: this is a working skeleton, not a finished UI — own the visual design, empty/loading states, and polish. Run with `npm run dev` inside `frontend/` (copy `.env.example` to `.env` first).
 
 ## Setup

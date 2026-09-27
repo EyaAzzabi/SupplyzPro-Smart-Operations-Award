@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
+import ClusterAnalysis from "./components/ClusterAnalysis";
 import ClusterTable from "./components/ClusterTable";
 import EvidencePanel from "./components/EvidencePanel";
 import FixComparison from "./components/FixComparison";
@@ -12,8 +13,11 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [evidence, setEvidence] = useState(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
   const [error, setError] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
+  const [analysisError, setAnalysisError] = useState(null);
 
   useEffect(() => {
     Promise.all([api.summary(), api.clusters(), api.fixComparison()])
@@ -35,6 +39,14 @@ export default function App() {
       .then(setEvidence)
       .catch((err) => setEvidenceError(err.message))
       .finally(() => setEvidenceLoading(false));
+
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+    api
+      .clusterAnalysis(selectedId)
+      .then(setAnalysis)
+      .catch((err) => setAnalysisError(err.message))
+      .finally(() => setAnalysisLoading(false));
   }, [selectedId]);
 
   return (
@@ -65,6 +77,11 @@ export default function App() {
       <section>
         <h2>Evidence</h2>
         <EvidencePanel evidence={evidence} loading={evidenceLoading} error={evidenceError} />
+      </section>
+
+      <section>
+        <h2>Root cause, impact, and remediation</h2>
+        <ClusterAnalysis analysis={analysis} loading={analysisLoading} error={analysisError} />
       </section>
 
       <section>
