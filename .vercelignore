@@ -1,0 +1,11 @@
+app.py
+backend/
+ai/
+database/
+evaluation/
+data/
+tests/
+docs/
+results/
+requirements.txt
+.env.example
