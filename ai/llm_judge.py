@@ -18,6 +18,9 @@ import os
 import re
 
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 RUBRIC_PROMPT = """You are auditing an AI agent's tool use for a supply-chain \
 operations product. You will be given the user's request, the exact \
@@ -40,10 +43,34 @@ Agent's message to the user: {agent_text}
 JSON:"""
 
 
+def _extract_json_object(content):
+    """Reasoning models can emit chain-of-thought text before the answer,
+    or nest an escaped duplicate of the JSON inside one of its own string
+    values -- a regex either swallows too much (greedy) or breaks on
+    nested braces (non-greedy, non-nested). Using the real JSON decoder's
+    raw_decode at every '{' handles both correctly: it parses exactly one
+    well-formed value from a given position, nested strings and all, so
+    the first successful parse containing our expected keys is the actual
+    outer answer object, not a fragment of it."""
+    decoder = json.JSONDecoder()
+    idx = 0
+    while True:
+        start = content.find("{", idx)
+        if start == -1:
+            return {"hallucinated": False, "wrong_target": False, "rationale": ""}
+        try:
+            obj, end = decoder.raw_decode(content, start)
+            if isinstance(obj, dict) and ("hallucinated" in obj or "wrong_target" in obj):
+                return obj
+            idx = end
+        except json.JSONDecodeError:
+            idx = start + 1
+
+
 def _call_nvidia_nim(user_text, tool_name, parameters, response, agent_text):
     api_key = os.environ.get("NVIDIA_API_KEY")
     base_url = os.environ.get("NVIDIA_NIM_BASE_URL", "https://integrate.api.nvidia.com/v1")
-    model = os.environ.get("NVIDIA_NIM_MODEL", "meta/llama-3.1-8b-instruct")
+    model = os.environ.get("NVIDIA_NIM_MODEL", "nvidia/nemotron-3.5-lightning-30b-a3b")
 
     prompt = RUBRIC_PROMPT.format(
         user_text=user_text, tool_name=tool_name, parameters=json.dumps(parameters),
@@ -56,14 +83,19 @@ def _call_nvidia_nim(user_text, tool_name, parameters, response, agent_text):
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.0,
-            "max_tokens": 200,
+            "max_tokens": 600,
+            # Some NIM models spend the token budget on a hidden reasoning
+            # pass before ever writing the visible answer, truncating it
+            # (finish_reason="length") well before max_tokens looks like
+            # it should be enough. Turning thinking off keeps the full
+            # budget for the actual JSON answer.
+            "chat_template_kwargs": {"thinking": False},
         },
-        timeout=20,
+        timeout=30,
     )
     resp.raise_for_status()
     content = resp.json()["choices"][0]["message"]["content"]
-    match = re.search(r"\{.*\}", content, re.DOTALL)
-    return json.loads(match.group(0)) if match else {"hallucinated": False, "wrong_target": False, "rationale": ""}
+    return _extract_json_object(content)
 
 
 _CODE_TOKEN = re.compile(r"\b(?:SKU|PO|WH|SUP)-\d+\b", re.IGNORECASE)
@@ -110,10 +142,16 @@ def _fallback_judge(user_text, tool_name, parameters, response, agent_text):
 
 def judge_tool_call(user_text, tool_name, parameters, response, agent_text):
     if os.environ.get("NVIDIA_API_KEY"):
-        try:
-            return _call_nvidia_nim(user_text, tool_name, parameters, response, agent_text)
-        except Exception:
-            pass  # fall through to the offline heuristic if the API call fails
+        # Observed failures on this endpoint are transient (timeouts under
+        # load), not deterministic errors -- successful calls consistently
+        # return in 4-8s, failures hang to the timeout. One retry recovers
+        # most of them instead of silently downgrading to the offline
+        # heuristic on the first hiccup.
+        for _attempt in range(2):
+            try:
+                return _call_nvidia_nim(user_text, tool_name, parameters, response, agent_text)
+            except Exception:
+                continue
     return _fallback_judge(user_text, tool_name, parameters, response, agent_text)
 
 
