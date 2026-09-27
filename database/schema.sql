@@ -67,8 +67,34 @@ CREATE TABLE IF NOT EXISTS failure_instances (
     FOREIGN KEY (cluster_id, batch_id) REFERENCES clusters(cluster_id, batch_id)
 );
 
+CREATE TABLE IF NOT EXISTS priority_scores (
+    cluster_id     INTEGER NOT NULL,
+    batch_id       TEXT NOT NULL,
+    frequency      INTEGER NOT NULL,
+    severity       INTEGER NOT NULL,
+    blast_radius   INTEGER NOT NULL,
+    score          INTEGER NOT NULL,
+    rank           INTEGER NOT NULL,
+    PRIMARY KEY (cluster_id, batch_id),
+    FOREIGN KEY (cluster_id, batch_id) REFERENCES clusters(cluster_id, batch_id)
+);
+
+CREATE TABLE IF NOT EXISTS root_causes (
+    cluster_id            INTEGER NOT NULL,
+    batch_id              TEXT NOT NULL,
+    failure_type          TEXT NOT NULL,
+    explanation           TEXT NOT NULL,
+    confidence            TEXT NOT NULL,
+    contributing_factors  TEXT NOT NULL,  -- JSON array
+    causal_chain          TEXT NOT NULL,  -- JSON array
+    PRIMARY KEY (cluster_id, batch_id),
+    FOREIGN KEY (cluster_id, batch_id) REFERENCES clusters(cluster_id, batch_id)
+);
+
 CREATE TABLE IF NOT EXISTS regression_probes (
     probe_id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    cluster_id           INTEGER NOT NULL,
+    batch_id             TEXT NOT NULL,          -- the baseline batch the tested cluster came from
     top_failure_type     TEXT NOT NULL,
     top_cluster_label    TEXT NOT NULL,
     frequency_before_fix INTEGER NOT NULL,
@@ -77,6 +103,8 @@ CREATE TABLE IF NOT EXISTS regression_probes (
     conversation_id      TEXT NOT NULL,
     caught               INTEGER NOT NULL       -- 0/1
 );
+
+CREATE INDEX IF NOT EXISTS idx_regression_probes_cluster ON regression_probes(cluster_id, batch_id);
 
 CREATE INDEX IF NOT EXISTS idx_turns_conversation ON turns(conversation_id, batch_id);
 CREATE INDEX IF NOT EXISTS idx_tool_calls_turn ON tool_calls(turn_id);

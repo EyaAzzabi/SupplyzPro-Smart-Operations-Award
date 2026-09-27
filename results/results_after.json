@@ -40,6 +40,7 @@
       "workflows_touched": [
         "shipment_tracking"
       ],
+      "batch_id": "after",
       "severity": 3,
       "blast_radius": 1,
       "priority_score": 9
@@ -84,6 +85,7 @@
       "workflows_touched": [
         "inventory_check"
       ],
+      "batch_id": "after",
       "severity": 3,
       "blast_radius": 1,
       "priority_score": 9
@@ -128,6 +130,7 @@
       "workflows_touched": [
         "supplier_lookup"
       ],
+      "batch_id": "after",
       "severity": 2,
       "blast_radius": 1,
       "priority_score": 6
@@ -172,6 +175,7 @@
       "workflows_touched": [
         "purchase_order"
       ],
+      "batch_id": "after",
       "severity": 2,
       "blast_radius": 1,
       "priority_score": 6
@@ -210,6 +214,7 @@
       "workflows_touched": [
         "supplier_lookup"
       ],
+      "batch_id": "after",
       "severity": 2,
       "blast_radius": 1,
       "priority_score": 4
@@ -257,6 +262,7 @@
       "workflows_touched": [
         "inventory_check"
       ],
+      "batch_id": "after",
       "severity": 1,
       "blast_radius": 1,
       "priority_score": 3
@@ -283,6 +289,7 @@
       "workflows_touched": [
         "supplier_lookup"
       ],
+      "batch_id": "after",
       "severity": 2,
       "blast_radius": 1,
       "priority_score": 2

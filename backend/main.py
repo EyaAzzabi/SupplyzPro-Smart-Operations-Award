@@ -80,6 +80,88 @@ def get_clusters(batch: str = "before"):
     ]
 
 
+@app.get("/api/priority")
+def get_priority(batch: str = "before"):
+    conn = get_conn()
+    try:
+        rows = conn.execute(
+            "SELECT p.cluster_id, p.batch_id, c.label, c.failure_type, "
+            "p.frequency, p.severity, p.blast_radius, p.score, p.rank, "
+            "c.workflows_touched "
+            "FROM priority_scores p "
+            "JOIN clusters c ON c.cluster_id = p.cluster_id AND c.batch_id = p.batch_id "
+            "WHERE p.batch_id = ? ORDER BY p.rank ASC, p.score DESC",
+            (batch,),
+        ).fetchall()
+    except sqlite3.OperationalError as exc:
+        if "no such table: priority_scores" in str(exc):
+            raise HTTPException(
+                status_code=503,
+                detail="Priority data not seeded yet. Run `python -m database.seed_db`.",
+            ) from exc
+        raise
+    finally:
+        conn.close()
+
+    return [
+        {
+            "cluster_id": row["cluster_id"],
+            "batch_id": row["batch_id"],
+            "label": row["label"],
+            "failure_type": row["failure_type"],
+            "frequency": row["frequency"],
+            "severity": row["severity"],
+            "blast_radius": row["blast_radius"],
+            "score": row["score"],
+            "rank": row["rank"],
+            "workflows_touched": row["workflows_touched"].split(","),
+        }
+        for row in rows
+    ]
+
+
+@app.get("/api/clusters/{cluster_id}/root-cause")
+def get_cluster_root_cause(cluster_id: int, batch: str = "before"):
+    conn = get_conn()
+    try:
+        cluster = conn.execute(
+            "SELECT cluster_id, batch_id, label, failure_type "
+            "FROM clusters WHERE cluster_id = ? AND batch_id = ?",
+            (cluster_id, batch),
+        ).fetchone()
+        if cluster is None:
+            raise HTTPException(status_code=404, detail="Cluster not found")
+
+        try:
+            root_cause = conn.execute(
+                "SELECT explanation, confidence, contributing_factors "
+                "FROM root_causes WHERE cluster_id = ? AND batch_id = ?",
+                (cluster_id, batch),
+            ).fetchone()
+        except sqlite3.OperationalError as exc:
+            if "no such table: root_causes" in str(exc):
+                raise HTTPException(
+                    status_code=503,
+                    detail="Root-cause data not seeded yet. Run `python -m database.seed_db`.",
+                ) from exc
+            raise
+
+        if root_cause is None:
+            raise HTTPException(status_code=404, detail="Root cause not found")
+
+        return {
+            "cluster_id": cluster["cluster_id"],
+            "batch_id": cluster["batch_id"],
+            "label": cluster["label"],
+            "failure_type": cluster["failure_type"],
+            "explanation": root_cause["explanation"],
+            "confidence": root_cause["confidence"],
+            "contributing_factors": json.loads(root_cause["contributing_factors"]),
+        }
+    finally:
+        conn.close()
+
+
 def _get_turns(conn, conversation_id, batch):
     rows = conn.execute(
         "SELECT t.id, t.turn_number, t.role, t.text, "
@@ -164,16 +246,11 @@ def get_cluster_analysis(cluster_id: int, batch: str = "before"):
     }
 
 
-@app.get("/api/fix-comparison")
-def get_fix_comparison():
-    conn = get_conn()
-    probes = conn.execute("SELECT * FROM regression_probes").fetchall()
-    conn.close()
-    if not probes:
-        raise HTTPException(status_code=404, detail="No regression probe data available")
-
+def _fix_comparison_payload(probes):
     first = probes[0]
     return {
+        "cluster_id": first["cluster_id"],
+        "batch_id": first["batch_id"],
         "top_failure_type": first["top_failure_type"],
         "top_cluster_label": first["top_cluster_label"],
         "frequency_before_fix": first["frequency_before_fix"],
@@ -184,6 +261,75 @@ def get_fix_comparison():
             for p in probes
         ],
     }
+
+
+@app.get("/api/fix-comparison")
+def get_fix_comparison():
+    """Legacy, unscoped route -- kept for the existing dashboards. New
+    clients should use the cluster-scoped route below."""
+    conn = get_conn()
+    probes = conn.execute("SELECT * FROM regression_probes").fetchall()
+    conn.close()
+    if not probes:
+        raise HTTPException(status_code=404, detail="No regression probe data available")
+    return _fix_comparison_payload(probes)
+
+
+@app.get("/api/clusters/{cluster_id}/fix-comparison")
+def get_cluster_fix_comparison(cluster_id: int, batch: str = "before"):
+    conn = get_conn()
+    probes = conn.execute(
+        "SELECT * FROM regression_probes WHERE cluster_id = ? AND batch_id = ?",
+        (cluster_id, batch),
+    ).fetchall()
+    conn.close()
+    if not probes:
+        raise HTTPException(status_code=404, detail="No regression probe data for this cluster")
+    return _fix_comparison_payload(probes)
+
+
+@app.get("/api/conversations/{conversation_id}")
+def get_conversation(conversation_id: str, batch: str = "before"):
+    conn = get_conn()
+    conv = conn.execute(
+        "SELECT conversation_id, workflow, failure_type FROM conversations "
+        "WHERE conversation_id = ? AND batch_id = ?",
+        (conversation_id, batch),
+    ).fetchone()
+    if conv is None:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    turns = _get_turns(conn, conversation_id, batch)
+    conn.close()
+    return {
+        "conversation_id": conv["conversation_id"],
+        "workflow": conv["workflow"],
+        "failure_type": conv["failure_type"],
+        "turns": turns,
+    }
+
+
+@app.get("/api/failures")
+def get_failures(batch: str = "before"):
+    conn = get_conn()
+    rows = conn.execute(
+        "SELECT cluster_id, batch_id, conversation_id, detector, failure_type, description, "
+        "evidence_turn_ids FROM failure_instances WHERE batch_id = ?",
+        (batch,),
+    ).fetchall()
+    conn.close()
+    return [
+        {
+            "cluster_id": r["cluster_id"],
+            "batch_id": r["batch_id"],
+            "conversation_id": r["conversation_id"],
+            "detector": r["detector"],
+            "failure_type": r["failure_type"],
+            "description": r["description"],
+            "evidence_turn_ids": [int(t) for t in r["evidence_turn_ids"].split(",")],
+        }
+        for r in rows
+    ]
 
 
 @app.get("/api/health")
