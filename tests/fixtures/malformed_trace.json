@@ -1,0 +1,8 @@
+{
+  "conversation_id": "mock_malformed_001",
+  "workflow": "inventory_check",
+  "turns": [
+    {"turn_id": 1, "role": "user", "text": "Check stock."},
+    {"turn_id": 1, "role": "agent", "text": "Checking now."}
+  ]
+}

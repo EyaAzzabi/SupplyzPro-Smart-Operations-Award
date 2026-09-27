@@ -11,16 +11,23 @@ Most agent failures never throw an error. A tool call "succeeds" with an empty o
 ## Architecture
 
 ```
-ai/          The AI system: detection, clustering, prioritization, root cause,
-             impact, remediation, executive report, regression probes
+ai/          The AI system: trace_investigator (normalize) -> failure_detective
+             (detect, evidence-validated) -> pattern_hunter (cluster) ->
+             prioritize -> root_cause / impact / remediation -> executive_report
+             -> regression_probes (fix verification)
 data/        Synthetic conversation generator (feeds the AI system)
 results/     ai/ layer's JSON output, consumed by database/seed_db.py
 evaluation/  Computes the required metrics against ground truth -> evaluation/results/
-database/    SQLite — conversations, tool calls, detected failures, clusters, probes
+database/    SQLite — conversations, tool calls, detected failures, clusters,
+             priority scores, root causes, regression probes
 backend/     FastAPI — REST API in front of the database
 frontend/    React (Vite) — the dashboard
+tests/       unittest suite covering ai/ and backend/ (28 tests, all offline/deterministic)
+docs/        backend-contract.md documents every endpoint's shape
 app.py       Streamlit dashboard (kept as a zero-setup fallback demo)
 ```
+
+`ai/trace_investigator.py`, `ai/failure_detective.py`, and `ai/pattern_hunter.py` are thin, tested wrappers: they don't reimplement detection or clustering, they validate it (every finding's evidence must reference a real turn) and generalize ingestion (accepts our canonical `turns` format, raw OpenAI-style `messages`, or tau-bench's `traj` — the same three shapes `data/fetch_real_world_sample.py` already had to handle by hand).
 
 **Why root cause/impact/remediation are deterministic, not LLM-generated:** we constructed the failure taxonomy ourselves, so the causal chain, operational risk, and standard fix for each of the 7 failure types are known facts (`ai/root_cause.py`'s `CAUSAL_CHAINS`, `ai/impact.py`'s `POTENTIAL_IMPACT`, `ai/remediation.py`'s `REMEDIATIONS`), not something requiring inference. This keeps them fast, testable, and honest about confidence (`observed` / `strongly_supported` / `likely` / `possible`, never overclaiming) — an LLM call would add latency and hallucination risk for zero benefit here. The LLM is reserved for `ai/llm_judge.py`, where semantic comparison genuinely can't be done with a lookup table.
 
@@ -83,6 +90,14 @@ cd frontend && npm run dev
 `data/*.json`, `results/*.json`, and `database/xray.db` are all committed, so steps 4-5 work immediately without re-running 1-3 — only re-run them if you change the generator or detection logic.
 
 **Fallback demo path**: `streamlit run app.py` reads `results/*.json` directly and needs nothing else running — useful if the full stack isn't up yet during the demo.
+
+## Testing
+
+```bash
+python -m unittest discover -s tests
+```
+
+28 tests, all offline and deterministic (a live `NVIDIA_API_KEY` in `.env` doesn't change the outcome — the one test whose finding count depends on which judge backend is active asserts the guaranteed finding rather than an exact count). Covers `ai/trace_investigator.py` (canonical + raw chat-message + tau-bench formats, malformed-input rejection), `ai/failure_detective.py` (evidence validation), `ai/pattern_hunter.py` (batch-scoped cluster identity), end-to-end trace scenarios against fixtures in `tests/fixtures/`, the versioned pipeline artifact, and every backend route against a temporary seeded database. Full endpoint documentation, including why root-cause/priority data is only seeded for the `before` batch, is in `docs/backend-contract.md`.
 
 ## NVIDIA integration
 
