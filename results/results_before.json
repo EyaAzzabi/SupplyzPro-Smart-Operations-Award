@@ -360,10 +360,10 @@
           "workflow": "inventory_check",
           "detector": "behavioral:user_frustration_signal",
           "failure_type": "user_frustration_signal",
-          "description": "User had to rephrase the same request across turns 1 and 3 -- never logged anywhere as a system issue.",
+          "description": "User had to rephrase the same request across turns 3 and 5 -- never logged anywhere as a system issue.",
           "evidence_turn_ids": [
-            1,
-            3
+            3,
+            5
           ]
         },
         {
@@ -371,10 +371,10 @@
           "workflow": "inventory_check",
           "detector": "behavioral:user_frustration_signal",
           "failure_type": "user_frustration_signal",
-          "description": "User had to rephrase the same request across turns 1 and 3 -- never logged anywhere as a system issue.",
+          "description": "User had to rephrase the same request across turns 3 and 5 -- never logged anywhere as a system issue.",
           "evidence_turn_ids": [
-            1,
-            3
+            3,
+            5
           ]
         },
         {
@@ -382,10 +382,10 @@
           "workflow": "inventory_check",
           "detector": "behavioral:user_frustration_signal",
           "failure_type": "user_frustration_signal",
-          "description": "User had to rephrase the same request across turns 1 and 3 -- never logged anywhere as a system issue.",
+          "description": "User had to rephrase the same request across turns 3 and 5 -- never logged anywhere as a system issue.",
           "evidence_turn_ids": [
-            1,
-            3
+            3,
+            5
           ]
         }
       ],

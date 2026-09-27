@@ -7,6 +7,13 @@ constraint getting dropped, or the user having to repeat themselves.
 
 import difflib
 
+_STOPWORDS = {
+    "a", "an", "the", "to", "of", "in", "on", "for", "and", "or", "is", "are", "was", "were",
+    "i", "you", "your", "my", "me", "it", "that", "this", "any", "should", "would", "could",
+    "please", "yes", "no", "so", "do", "did", "with", "at", "be", "can", "will", "just", "go",
+    "ahead", "sure", "ok", "okay", "thanks", "thank",
+}
+
 
 def detect_context_collapse(conversation):
     """A tool call's parameters silently override a constraint the user
@@ -35,16 +42,24 @@ def detect_context_collapse(conversation):
     return instances
 
 
-def detect_user_frustration(conversation, similarity_threshold=0.55):
+def _content_words(text):
+    return {w.strip(".,!?;:'\"") for w in text.lower().split()} - _STOPWORDS
+
+
+def detect_user_frustration(conversation, similarity_threshold=0.65):
     """Consecutive-ish user turns that are near-duplicates of each other --
-    the user rephrasing the same request because the agent didn't get it."""
+    the user rephrasing the same request because the agent didn't get it.
+    Shared-word overlap is computed on content words only (stopwords
+    excluded): two short, different affirmative replies ("yes, please" /
+    "yes, that's right") otherwise look like repetition just because they
+    share filler words, not because the user repeated themselves."""
     instances = []
     user_turns = [t for t in conversation["turns"] if t["role"] == "user"]
     for i in range(len(user_turns) - 1):
         a, b = user_turns[i]["text"], user_turns[i + 1]["text"]
         ratio = difflib.SequenceMatcher(None, a.lower(), b.lower()).ratio()
-        shared_words = set(a.lower().split()) & set(b.lower().split())
-        if ratio > similarity_threshold or len(shared_words) >= 4:
+        shared_words = _content_words(a) & _content_words(b)
+        if ratio > similarity_threshold or len(shared_words) >= 3:
             instances.append({
                 "conversation_id": conversation["conversation_id"],
                 "workflow": conversation["workflow"],

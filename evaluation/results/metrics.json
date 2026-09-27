@@ -19,10 +19,10 @@
     "n": 3
   },
   "analysis_latency": {
-    "detection_seconds": 0.0018,
-    "clustering_seconds": 1.4478,
+    "detection_seconds": 0.0017,
+    "clustering_seconds": 1.4219,
     "prioritization_seconds": 0.0,
-    "total_seconds": 1.4497,
+    "total_seconds": 1.4236,
     "conversations_analyzed": 60
   },
   "cost_per_analysis": {

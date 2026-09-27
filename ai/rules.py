@@ -10,12 +10,22 @@ def _tool_turns(conversation):
     return [t for t in conversation["turns"] if "tool_call" in t]
 
 
+def _text_surfaces_error(text):
+    return any(w in text.lower() for w in ["sorry", "error", "couldn't", "failed", "unable", "issue"])
+
+
 def detect_silent_tool_failure(conversation):
     """A tool call errors out (explicit error_code, or an explicit
-    success:false in the payload) but the agent's own message never
-    surfaces that to the user."""
+    success:false in the payload) but the agent never surfaces that to the
+    user -- checking the tool-call turn's own text AND any agent turns that
+    follow before the user speaks again, since some conventions put the
+    tool call and its narration in the same turn (ours) and others split
+    them into separate consecutive turns (e.g. tau-bench)."""
     instances = []
-    for turn in _tool_turns(conversation):
+    turns = conversation["turns"]
+    for idx, turn in enumerate(turns):
+        if "tool_call" not in turn:
+            continue
         call = turn["tool_call"]
         if call["tool_name"] == "create_purchase_order":
             # A timed-out order call that gets retried is its own, more
@@ -26,8 +36,15 @@ def detect_silent_tool_failure(conversation):
         errored = call.get("error_code") is not None or response.get("success") is False
         if not errored:
             continue
-        agent_text = turn["text"].lower()
-        surfaced = any(w in agent_text for w in ["sorry", "error", "couldn't", "failed", "unable", "issue"])
+
+        surfaced = _text_surfaces_error(turn["text"])
+        for later in turns[idx + 1:]:
+            if later["role"] == "user":
+                break
+            if later["role"] == "agent" and _text_surfaces_error(later["text"]):
+                surfaced = True
+                break
+
         if not surfaced:
             instances.append({
                 "conversation_id": conversation["conversation_id"],

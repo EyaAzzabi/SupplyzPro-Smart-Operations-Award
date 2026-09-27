@@ -1,0 +1,229 @@
+{
+  "dataset": "tau-bench gpt-4o-retail sample (30 conversations: 15 genuinely failed, 15 genuinely succeeded)",
+  "recall_on_genuine_failures": 0.13333333333333333,
+  "false_positive_rate_on_genuine_successes": 0.13333333333333333,
+  "flagged_failure_type_counts": {
+    "user_frustration_signal": 4
+  },
+  "note": "Lower than the synthetic evaluation's 1.00/1.00 by design, for two honest reasons, not one. (1) Domain mismatch: tau-bench uses different tool names and response schemas than our supply-chain domain, so the domain-specific hallucination heuristic in ai/llm_judge.py's offline fallback mostly doesn't engage here (it looks for a 'quantity' field this dataset's tools don't return) -- only the domain-agnostic rule-based and behavioral layers meaningfully transfer without modification. (2) A more fundamental point: tau-bench's `reward` measures whether the task was completed correctly, not whether the agent was deceptive. Several reward=0 conversations are the agent honestly telling the user it's stuck (e.g. asking for an order ID it never receives, then saying so) -- a genuinely incomplete task, but not a hidden failure in our sense, and our detector is correct to stay quiet on those. Recall against raw `reward` therefore understates precision on the failure mode we actually target: confident, wrong claims.",
+  "conversations": [
+    {
+      "conversation_id": "tau_retail_000",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_001",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_002",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_003",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_004",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_005",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_006",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": true,
+      "flagged_types": [
+        "user_frustration_signal"
+      ]
+    },
+    {
+      "conversation_id": "tau_retail_007",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_008",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": true,
+      "flagged_types": [
+        "user_frustration_signal"
+      ]
+    },
+    {
+      "conversation_id": "tau_retail_009",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_010",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_011",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_012",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": true,
+      "flagged_types": [
+        "user_frustration_signal"
+      ]
+    },
+    {
+      "conversation_id": "tau_retail_013",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_014",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_015",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_016",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_017",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_018",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_019",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_020",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_021",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_022",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_023",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": true,
+      "flagged_types": [
+        "user_frustration_signal"
+      ]
+    },
+    {
+      "conversation_id": "tau_retail_024",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_025",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_026",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_027",
+      "task_reward": 0.0,
+      "genuinely_failed": true,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_028",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    },
+    {
+      "conversation_id": "tau_retail_029",
+      "task_reward": 1.0,
+      "genuinely_failed": false,
+      "flagged": false,
+      "flagged_types": []
+    }
+  ]
+}
