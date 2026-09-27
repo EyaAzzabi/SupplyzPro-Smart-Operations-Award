@@ -34,7 +34,7 @@ function ShieldIcon() {
 }
 
 function formatNumber(value) {
-  return typeof value === "number" ? value.toLocaleString("fr-FR") : "—";
+  return typeof value === "number" ? value.toLocaleString("en-US") : "—";
 }
 
 function computeFixRate(fixData) {
@@ -94,7 +94,7 @@ export default function StatsCards({ summary, clusters, fixData }) {
         icon={<ChatIcon />}
       />
       <StatCard
-        label="Échecs Détectés"
+        label="Detected Failures"
         value={formatNumber(summary?.total_failures)}
         hint={`Across ${formatNumber(summary?.cluster_count)} root-cause clusters`}
         tone="danger"
@@ -108,7 +108,7 @@ export default function StatsCards({ summary, clusters, fixData }) {
         icon={<ShieldIcon />}
       />
       <StatCard
-        label="Taux de Correction"
+        label="Fix Rate"
         value={fixRate === null ? "—" : `${Math.round(fixRate * 100)}%`}
         hint={occurrencesHint}
         hintTitle={fixData?.top_cluster_label}

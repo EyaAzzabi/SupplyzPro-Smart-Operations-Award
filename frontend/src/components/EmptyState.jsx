@@ -29,7 +29,7 @@ export default function EmptyState({ icon, title, description, onBack }) {
         <p className="empty-state-description">{description}</p>
         <button type="button" className="empty-state-back" onClick={onBack}>
           <ArrowLeftIcon />
-          Revenir au Dashboard
+          Back to Dashboard
         </button>
       </div>
     </section>

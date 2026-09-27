@@ -20,15 +20,6 @@ function ChevronIcon() {
   );
 }
 
-function UploadIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 16V4.5M8 8.5l4-4 4 4" />
-      <path d="M4 15.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2.5" />
-    </svg>
-  );
-}
-
 function ChevronRightIcon() {
   return (
     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -40,23 +31,18 @@ function ChevronRightIcon() {
 export default function Header({ pageLabel = "Dashboard", title, subtitle }) {
   const [period, setPeriod] = useState(PERIODS[0]);
   const [periodOpen, setPeriodOpen] = useState(false);
-  const [uploadOpen, setUploadOpen] = useState(false);
   const actionsRef = useRef(null);
 
   useEffect(() => {
-    if (!periodOpen && !uploadOpen) return undefined;
+    if (!periodOpen) return undefined;
 
     const onPointerDown = (event) => {
       if (actionsRef.current && !actionsRef.current.contains(event.target)) {
         setPeriodOpen(false);
-        setUploadOpen(false);
       }
     };
     const onKeyDown = (event) => {
-      if (event.key === "Escape") {
-        setPeriodOpen(false);
-        setUploadOpen(false);
-      }
+      if (event.key === "Escape") setPeriodOpen(false);
     };
 
     document.addEventListener("pointerdown", onPointerDown);
@@ -65,7 +51,7 @@ export default function Header({ pageLabel = "Dashboard", title, subtitle }) {
       document.removeEventListener("pointerdown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [periodOpen, uploadOpen]);
+  }, [periodOpen]);
 
   return (
     <header className="page-header">
@@ -92,10 +78,7 @@ export default function Header({ pageLabel = "Dashboard", title, subtitle }) {
               className="period-button"
               aria-haspopup="listbox"
               aria-expanded={periodOpen}
-              onClick={() => {
-                setPeriodOpen((open) => !open);
-                setUploadOpen(false);
-              }}
+              onClick={() => setPeriodOpen((open) => !open)}
             >
               <CalendarIcon />
               <span>{period}</span>
@@ -103,7 +86,7 @@ export default function Header({ pageLabel = "Dashboard", title, subtitle }) {
             </button>
 
             {periodOpen && (
-              <ul className="header-menu-list" role="listbox" aria-label="Période">
+              <ul className="header-menu-list" role="listbox" aria-label="Time period">
                 {PERIODS.map((option) => (
                   <li key={option}>
                     <button
@@ -121,37 +104,6 @@ export default function Header({ pageLabel = "Dashboard", title, subtitle }) {
                   </li>
                 ))}
               </ul>
-            )}
-          </div>
-
-          <div className="header-menu">
-            <button
-              type="button"
-              className="upload-button"
-              aria-expanded={uploadOpen}
-              onClick={() => {
-                setUploadOpen((open) => !open);
-                setPeriodOpen(false);
-              }}
-            >
-              <UploadIcon />
-              <span>Upload traces</span>
-            </button>
-
-            {uploadOpen && (
-              <div className="header-pop" role="status">
-                <p className="header-pop-title">Fonctionnalité à venir</p>
-                <p className="header-pop-text">
-                  L&apos;import de traces sera disponible dans une prochaine version.
-                </p>
-                <button
-                  type="button"
-                  className="header-pop-close"
-                  onClick={() => setUploadOpen(false)}
-                >
-                  Fermer
-                </button>
-              </div>
             )}
           </div>
         </div>

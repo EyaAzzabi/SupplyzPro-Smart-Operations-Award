@@ -20,53 +20,61 @@ const PAGES = {
     component: FailureClustersPage,
     label: "Failure clusters",
     title: "Failure Clusters",
-    subtitle: "Cluster d’échecs",
-    placeholder: true,
+    subtitle: "Analyze root causes, view evidence, and explore remediations for each cluster.",
   },
   "trace-explorer": {
     component: TraceExplorerPage,
     label: "Trace explorer",
     title: "Trace Explorer",
-    subtitle: "Traces d’agents",
-    placeholder: true,
+    subtitle: "Read every agent conversation turn by turn, with the failing tool calls highlighted.",
   },
   "replay-lab": {
     component: ReplayLabPage,
     label: "Replay lab",
     title: "Replay Lab",
-    subtitle: "Simulation de correctifs",
-    placeholder: true,
+    subtitle: "Test mitigations and verify fixes before deploying to production.",
   },
   datasets: {
     component: DatasetsPage,
     label: "Datasets",
     title: "Datasets",
-    subtitle: "Jeux de données",
+    subtitle: "Datasets",
     placeholder: true,
   },
   evaluation: {
     component: EvaluationPage,
     label: "Evaluation",
     title: "Evaluation",
-    subtitle: "Métriques du système",
+    subtitle: "Model metrics",
     placeholder: true,
   },
 };
 
 export default function App() {
   const [activePage, setActivePage] = useState("dashboard");
+  const [selectedClusterId, setSelectedClusterId] = useState(null);
   const page = PAGES[activePage] ?? PAGES.dashboard;
   const PageComponent = page.component;
+
+  const openCluster = (clusterId) => {
+    setSelectedClusterId(clusterId);
+    setActivePage("failure-clusters");
+  };
+
+  const pageProps =
+    activePage === "dashboard"
+      ? { onSelectCluster: openCluster }
+      : activePage === "failure-clusters"
+        ? { selectedId: selectedClusterId, onSelect: setSelectedClusterId }
+        : page.placeholder
+          ? { onBack: () => setActivePage("dashboard") }
+          : {};
 
   return (
     <Layout activePage={activePage} onNavigate={setActivePage}>
       <div className="app">
         <Header pageLabel={page.label} title={page.title} subtitle={page.subtitle} />
-        {page.placeholder ? (
-          <PageComponent onBack={() => setActivePage("dashboard")} />
-        ) : (
-          <PageComponent />
-        )}
+        <PageComponent {...pageProps} />
       </div>
     </Layout>
   );

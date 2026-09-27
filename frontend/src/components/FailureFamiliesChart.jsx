@@ -2,10 +2,10 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import "./Charts.css";
 
 const MOCK_FAMILIES = [
-  { name: "Retry loop", value: 42, color: "#8b5cf6" },
-  { name: "Silent failure", value: 25, color: "#f97316" },
-  { name: "Invalid arguments", value: 18, color: "#3b82f6" },
-  { name: "Other", value: 15, color: "#9ca3af" },
+  { name: "Retry loop", value: 42, color: "#007bff" },
+  { name: "Silent failure", value: 25, color: "#ff3333" },
+  { name: "Invalid arguments", value: 18, color: "#00e676" },
+  { name: "Other", value: 15, color: "#8892b0" },
 ];
 
 function DonutTooltip({ active, payload, total }) {

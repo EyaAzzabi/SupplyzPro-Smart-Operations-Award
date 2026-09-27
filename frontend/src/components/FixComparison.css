@@ -1,9 +1,9 @@
 .replay-lab {
   padding: 1.4rem 1.4rem 1.3rem;
-  border: 1px solid #3730a3;
+  border: 1px solid #00337a;
   border-radius: 14px;
-  background: linear-gradient(150deg, #0b1120 0%, #141b34 55%, #1e1b4b 100%);
-  box-shadow: 0 24px 48px -28px rgba(99, 102, 241, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: linear-gradient(150deg, #0a192f 0%, #112240 55%, #0a192f 100%);
+  box-shadow: 0 24px 48px -28px rgba(0, 123, 255, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .replay-eyebrow {
@@ -12,7 +12,7 @@
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #a5b4fc;
+  color: #93c5fd;
 }
 
 .replay-title {
@@ -64,11 +64,11 @@
 }
 
 .bar-fill.before {
-  background: linear-gradient(90deg, #ef4444, #f87171);
+  background: linear-gradient(90deg, #ff3333, #ff6b6b);
 }
 
 .bar-fill.after {
-  background: linear-gradient(90deg, #10b981, #34d399);
+  background: linear-gradient(90deg, #00c853, #00e676);
 }
 
 .bar-value {
@@ -124,19 +124,19 @@
   padding: 0.55rem 1.05rem;
   border: 1px solid transparent;
   border-radius: 9px;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 140%);
   color: #ffffff;
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 10px 24px -12px rgba(99, 102, 241, 0.9);
+  box-shadow: 0 10px 24px -12px rgba(0, 123, 255, 0.9);
   transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 .replay-button:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px -12px rgba(99, 102, 241, 1);
+  box-shadow: 0 14px 28px -12px rgba(0, 123, 255, 1);
 }
 
 .replay-button:active {
@@ -144,7 +144,7 @@
 }
 
 .replay-button:focus-visible {
-  outline: 2px solid #a5b4fc;
+  outline: 2px solid #93c5fd;
   outline-offset: 2px;
 }
 
@@ -154,10 +154,10 @@
   gap: 0.4rem;
   margin: 0;
   padding: 0.4rem 0.7rem;
-  border: 1px solid rgba(52, 211, 153, 0.35);
+  border: 1px solid rgba(0, 230, 118, 0.35);
   border-radius: 8px;
-  background: rgba(16, 185, 129, 0.12);
-  color: #6ee7b7;
+  background: rgba(0, 200, 83, 0.12);
+  color: #3dffa0;
   font-size: 0.84rem;
   font-weight: 500;
   animation: replay-pop 0.25s ease both;

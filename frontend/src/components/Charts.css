@@ -65,11 +65,11 @@
 }
 
 .chart-dot--failed {
-  background: #7c3aed;
+  background: #007bff;
 }
 
 .chart-dot--all {
-  background: #cbd5e1;
+  background: #8892b0;
 }
 
 .chart-body {

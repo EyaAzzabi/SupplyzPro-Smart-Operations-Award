@@ -5,7 +5,7 @@ export default function EvaluationPage({ onBack }) {
     <EmptyState
       icon="📊"
       title="Evaluation Metrics"
-      description="Consultez les métriques de précision, rappel et latence de notre modèle IA."
+      description="Review the precision, recall and latency metrics of our AI model."
       onBack={onBack}
     />
   );

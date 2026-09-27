@@ -73,12 +73,12 @@ export default function FailureTrendChart({ data = MOCK_TREND }) {
               tick={{ fontSize: 11, fill: "#94a3b8" }}
               width={48}
             />
-            <Tooltip content={<TrendTooltip />} cursor={{ stroke: "#c7d2fe", strokeWidth: 1.5 }} />
+            <Tooltip content={<TrendTooltip />} cursor={{ stroke: "#00d2ff", strokeWidth: 1.5 }} />
             <Line
               type="monotone"
               dataKey="total"
               name="All traces"
-              stroke="#cbd5e1"
+              stroke="#8892b0"
               strokeWidth={2}
               dot={false}
               activeDot={{ r: 4, fill: "#cbd5e1", stroke: "#ffffff", strokeWidth: 2 }}
@@ -87,10 +87,10 @@ export default function FailureTrendChart({ data = MOCK_TREND }) {
               type="monotone"
               dataKey="failures"
               name="Failed traces"
-              stroke="#7c3aed"
+              stroke="#007bff"
               strokeWidth={2.5}
-              dot={{ r: 3, fill: "#7c3aed", strokeWidth: 0 }}
-              activeDot={{ r: 5, fill: "#7c3aed", stroke: "#ffffff", strokeWidth: 2 }}
+              dot={{ r: 3, fill: "#007bff", strokeWidth: 0 }}
+              activeDot={{ r: 5, fill: "#007bff", stroke: "#ffffff", strokeWidth: 2 }}
             />
           </LineChart>
         </ResponsiveContainer>

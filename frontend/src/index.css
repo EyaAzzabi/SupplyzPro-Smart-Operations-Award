@@ -1,3 +1,27 @@
+:root {
+  --color-primary: #007bff; /* Bleu électrique pour les boutons et accents */
+  --color-primary-hover: #0056b3;
+  --color-accent: #00d2ff; /* Cyan clair pour les dégradés ou survols */
+  --color-dark-bg: #0a192f; /* Bleu marine très profond pour la sidebar */
+  --color-dark-card: #112240; /* Bleu marine un peu plus clair pour les cartes sombres */
+  --color-danger: #ff3333; /* Rouge vif, comme le point d'alerte du logo */
+  --color-success: #00e676; /* Vert néon pour les succès */
+
+  /* Teintes dérivées : needed for backgrounds, borders and readable text. */
+  --color-primary-soft: #eaf4ff;
+  --color-primary-border: #bfdbfe;
+  --color-primary-ink: #004494;
+  --color-accent-ink: #0069d9;
+  --color-success-ink: #046b3a;
+  --color-danger-soft: #ffe0e0;
+  --color-danger-ink: #a81616;
+  --color-danger-deep: #5c0b0b;
+  --color-neutral-line: #8892b0;
+  --color-sidebar-text: #cbd5f5;
+  --color-sidebar-text-dim: #a9b6d4;
+  --color-sidebar-text-faint: #7c8db5;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -15,4 +39,39 @@ body {
 img,
 svg {
   max-width: 100%;
+}
+
+/* Visible to screen readers only. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Soft entrance for page and tab content, so nothing snaps into place. */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in {
+    animation: none;
+  }
 }

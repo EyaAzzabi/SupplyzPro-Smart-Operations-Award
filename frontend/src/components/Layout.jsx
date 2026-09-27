@@ -81,6 +81,7 @@ const NAV_GROUPS = [
 
 export default function Layout({ children, activePage = "dashboard", onNavigate = () => {} }) {
   const [navOpen, setNavOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     if (!navOpen) return undefined;
@@ -101,7 +102,7 @@ export default function Layout({ children, activePage = "dashboard", onNavigate 
   }, [navOpen]);
 
   return (
-    <div className={`layout${navOpen ? " layout--nav-open" : ""}`}>
+    <div className={`layout${navOpen ? " layout--nav-open" : ""}${sidebarCollapsed ? " layout--sidebar-collapsed" : ""}`}>
       <header className="layout-topbar">
         <span className="layout-topbar-brand">X-Ray</span>
         <button
@@ -126,6 +127,16 @@ export default function Layout({ children, activePage = "dashboard", onNavigate 
         aria-hidden="true"
       />
 
+      <button
+        type="button"
+        className="layout-sidebar-toggle"
+        onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
+        aria-label={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+        title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+      >
+        {sidebarCollapsed ? "▶" : ""}
+      </button>
+
       <aside className="layout-sidebar" id="layout-sidebar">
         <button
           type="button"
@@ -136,15 +147,20 @@ export default function Layout({ children, activePage = "dashboard", onNavigate 
           <span aria-hidden="true">✕</span>
         </button>
 
-        <div className="layout-brand">
-          <span className="layout-logo" aria-hidden="true">
-            X
-          </span>
+        <button
+          type="button"
+          className="layout-brand"
+          onClick={() => {
+            onNavigate("dashboard");
+            setNavOpen(false);
+          }}
+        >
+          <img src="/logo.png" alt="X-Ray Logo" className="sidebar-logo" />
           <span className="layout-brand-text">
             <span className="layout-brand-name">X-Ray</span>
             <span className="layout-brand-tagline">Hidden-failure analysis for AI agents</span>
           </span>
-        </div>
+        </button>
 
         <nav className="layout-nav" aria-label="Main navigation">
           {NAV_GROUPS.map((group) => (

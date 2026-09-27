@@ -44,8 +44,8 @@
 .turn-flag {
   padding: 0.1rem 0.4rem;
   border-radius: 999px;
-  background: #fee2e2;
-  color: #991b1b;
+  background: #ffe0e0;
+  color: #7a0f0f;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.07em;
@@ -69,17 +69,17 @@
 }
 
 .turn-row--agent .turn-bubble {
-  background: #eef2ff;
-  border-color: #e0e7ff;
+  background: #eff6ff;
+  border-color: #dbeafe;
   border-bottom-right-radius: 4px;
-  color: #1e1b4b;
+  color: #0a192f;
 }
 
 .turn-row.is-evidence .turn-bubble {
-  background: #fef2f2;
-  border-color: #fca5a5;
-  color: #7f1d1d;
-  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.12);
+  background: #fff2f2;
+  border-color: #ff9c9c;
+  color: #5c0b0b;
+  box-shadow: 0 0 0 1px rgba(255, 51, 51, 0.12);
 }
 
 .tool-call {
@@ -109,8 +109,8 @@
 .tool-call-error {
   padding: 0.05rem 0.4rem;
   border-radius: 4px;
-  background: #7f1d1d;
-  color: #fee2e2;
+  background: #5c0b0b;
+  color: #ffe0e0;
   font-size: 0.66rem;
   font-weight: 700;
 }

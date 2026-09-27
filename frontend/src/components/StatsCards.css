@@ -58,7 +58,7 @@
 .stats-card-fill {
   height: 100%;
   border-radius: 999px;
-  background: #16a34a;
+  background: #046b3a;
 }
 
 .stats-card-hint {
@@ -73,12 +73,12 @@
 }
 
 .stats-card--danger .stats-card-value {
-  color: #dc2626;
+  color: #d61f1f;
 }
 
 .stats-card--danger .stats-card-icon {
-  background: #fef2f2;
-  color: #dc2626;
+  background: #fff2f2;
+  color: #d61f1f;
 }
 
 .stats-card--warning .stats-card-value {
@@ -91,17 +91,17 @@
 }
 
 .stats-card--success .stats-card-value {
-  color: #16a34a;
+  color: #046b3a;
 }
 
 .stats-card--success .stats-card-icon {
-  background: #f0fdf4;
-  color: #16a34a;
+  background: #eafff4;
+  color: #046b3a;
 }
 
 .stats-card--neutral .stats-card-icon {
-  background: #eef2ff;
-  color: #4f46e5;
+  background: #eff6ff;
+  color: #0056b3;
 }
 
 @media (max-width: 768px) {

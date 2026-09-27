@@ -5,7 +5,7 @@ export default function DatasetsPage({ onBack }) {
     <EmptyState
       icon="💾"
       title="Datasets"
-      description="Gérez les jeux de données synthétiques et réels utilisés pour l’entraînement."
+      description="Manage the synthetic and real datasets used for training and evaluation."
       onBack={onBack}
     />
   );

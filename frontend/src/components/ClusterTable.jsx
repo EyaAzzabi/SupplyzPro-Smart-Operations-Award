@@ -3,9 +3,9 @@ import "./ClusterTable.css";
 const SEVERITY_LABEL = { 1: "Low", 2: "Medium", 3: "High" };
 
 function scoreTier(score) {
-  if (score > 70) return { tone: "critical", label: "Critique" };
-  if (score >= 30) return { tone: "medium", label: "Moyen" };
-  return { tone: "low", label: "Faible" };
+  if (score > 70) return { tone: "critical", label: "Critical" };
+  if (score >= 30) return { tone: "medium", label: "Medium" };
+  return { tone: "low", label: "Low" };
 }
 
 function prettifyType(failureType) {
@@ -16,7 +16,7 @@ function prettifyType(failureType) {
     .join(" ");
 }
 
-export default function ClusterTable({ clusters, selectedId, onSelect }) {
+export default function ClusterTable({ clusters, selectedId, onSelect, compact = false }) {
   if (!clusters || clusters.length === 0) {
     return <p className="cluster-empty">No failure clusters detected for this batch yet.</p>;
   }
@@ -24,11 +24,11 @@ export default function ClusterTable({ clusters, selectedId, onSelect }) {
   const maxFrequency = Math.max(...clusters.map((c) => c.frequency), 1);
 
   return (
-    <div className="cluster-list">
+    <div className={`cluster-list${compact ? " is-compact" : ""}`}>
       <div className="cluster-header-row" aria-hidden="true">
         <span>ID</span>
-        <span>Type d'échec</span>
-        <span>Cause racine</span>
+        <span>Failure Type</span>
+        {!compact && <span>Root Cause</span>}
         <span className="is-numeric">Score</span>
         <span className="is-numeric">Occurrences</span>
       </div>
@@ -41,7 +41,7 @@ export default function ClusterTable({ clusters, selectedId, onSelect }) {
           return (
             <li key={cluster.cluster_id} className="cluster-item">
               <div
-                className={`cluster-row${isSelected ? " is-selected" : ""}`}
+                className={`cluster-row${isSelected ? " is-selected" : ""}${compact ? " is-compact" : ""}`}
                 role="button"
                 tabIndex={0}
                 aria-pressed={isSelected}
@@ -58,16 +58,20 @@ export default function ClusterTable({ clusters, selectedId, onSelect }) {
 
                 <span className="cluster-cell cluster-cell-type">{cluster.label}</span>
 
-                <span className="cluster-cell cluster-cell-meta">
-                  <span className={`severity-pill severity-${cluster.severity}`}>
-                    {SEVERITY_LABEL[cluster.severity] || cluster.severity}
+                {!compact && (
+                  <span className="cluster-cell cluster-cell-meta">
+                    <span className={`severity-pill severity-${cluster.severity}`}>
+                      {SEVERITY_LABEL[cluster.severity] || cluster.severity}
+                    </span>
+                    <span className="cluster-workflows">{cluster.workflows_touched.join(" · ")}</span>
                   </span>
-                  <span className="cluster-workflows">{cluster.workflows_touched.join(" · ")}</span>
-                </span>
+                )}
 
-                <span className="cluster-cell cluster-cell-root">
-                  <span className="cluster-root-tag">{prettifyType(cluster.failure_type)}</span>
-                </span>
+                {!compact && (
+                  <span className="cluster-cell cluster-cell-root">
+                    <span className="cluster-root-tag">{prettifyType(cluster.failure_type)}</span>
+                  </span>
+                )}
 
                 <span className="cluster-cell cluster-cell-score">
                   <span className={`priority-badge priority-${tier.tone}`}>

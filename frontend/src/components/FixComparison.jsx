@@ -78,7 +78,7 @@ export default function FixComparison({ data }) {
         {replayDone && (
           <p className="replay-success" role="status">
             <CheckIcon />
-            Simulation réussie : 0 échec détecté
+            Simulation complete: 0 failures detected
           </p>
         )}
       </div>

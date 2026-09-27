@@ -21,9 +21,9 @@
   height: 104px;
   margin: 0 auto;
   border-radius: 26px;
-  background: linear-gradient(140deg, #eef2ff, #f5f3ff 55%, #ecfeff);
-  border: 1px solid #e0e7ff;
-  box-shadow: 0 18px 40px -28px rgba(79, 70, 229, 0.55);
+  background: linear-gradient(140deg, #eff6ff, #eff6ff 55%, #ecfeff);
+  border: 1px solid #dbeafe;
+  box-shadow: 0 18px 40px -28px rgba(0, 86, 179, 0.55);
   font-size: 4rem;
   line-height: 1;
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
@@ -54,11 +54,11 @@
   padding: 0.6rem 1.05rem;
   border: 1px solid transparent;
   border-radius: 10px;
-  background: #eef2ff;
+  background: #eff6ff;
   font-family: inherit;
   font-size: 0.88rem;
   font-weight: 600;
-  color: #4338ca;
+  color: #004494;
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -66,11 +66,11 @@
 }
 
 .empty-state-back:hover {
-  background: #e0e7ff;
+  background: #dbeafe;
 }
 
 .empty-state-back:focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid #007bff;
   outline-offset: 2px;
 }
 
