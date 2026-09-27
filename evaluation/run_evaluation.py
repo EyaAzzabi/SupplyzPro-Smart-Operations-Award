@@ -142,6 +142,35 @@ def estimate_cost(conversations, using_live_nvidia_nim):
     }
 
 
+def measure_analysis_artifact():
+    """Track the current Agent 4-6 handoff until executable agents exist."""
+    artifact_path = RESULTS_DIR.parent.parent / "results" / "agent_4_6_output.json"
+    if not artifact_path.exists():
+        return {
+            "mode": "unavailable",
+            "artifact_processing_seconds": None,
+            "root_cause_records": 0,
+            "priority_records": 0,
+            "fix_replay_records": 0,
+            "llm_calls": 0,
+            "estimated_cost_usd": 0.0,
+        }
+
+    t0 = time.perf_counter()
+    artifact = json.loads(artifact_path.read_text())
+    elapsed = time.perf_counter() - t0
+    return {
+        "mode": "mock_artifact",
+        "artifact_processing_seconds": round(elapsed, 6),
+        "root_cause_records": len(artifact.get("root_causes", [])),
+        "priority_records": len(artifact.get("priority_scores", [])),
+        "fix_replay_records": len(artifact.get("fix_replays", [])),
+        "llm_calls": 0,
+        "estimated_cost_usd": 0.0,
+        "note": "Agents 4-6 are represented by a deterministic mock artifact; no generation calls were made.",
+    }
+
+
 def main():
     import os
 
@@ -162,6 +191,7 @@ def main():
         "silent_failure_recall": silent_failure_recall(conversations, instances_by_conv),
         "analysis_latency": latency,
         "cost_per_analysis": estimate_cost(conversations, using_live_nvidia_nim=bool(os.environ.get("NVIDIA_API_KEY"))),
+        "analysis_side_runtime_cost": measure_analysis_artifact(),
     }
 
     (RESULTS_DIR / "metrics.json").write_text(json.dumps(metrics, indent=2))
@@ -184,6 +214,13 @@ def main():
     cost = metrics["cost_per_analysis"]
     lines.append(f"- **Cost per analysis**: {cost['mode']}, {cost['llm_calls']} LLM calls, "
                  f"estimated cost {cost['estimated_cost_usd']}")
+    analysis_side = metrics["analysis_side_runtime_cost"]
+    lines.append(f"- **Agents 4-6 handoff**: {analysis_side['mode']}, "
+                 f"{analysis_side['root_cause_records']} root-cause records, "
+                 f"{analysis_side['priority_records']} priority records, "
+                 f"{analysis_side['fix_replay_records']} replay records, "
+                 f"{analysis_side['llm_calls']} LLM calls, estimated cost "
+                 f"{analysis_side['estimated_cost_usd']}")
 
     (RESULTS_DIR / "metrics.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))

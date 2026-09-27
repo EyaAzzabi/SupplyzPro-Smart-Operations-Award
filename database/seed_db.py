@@ -72,9 +72,54 @@ def _insert_batch(conn, batch_id, results, conversations_by_id):
             )
 
 
+def _insert_analysis(conn, analysis):
+    if analysis.get("artifact_type") != "xray.agent_4_6_output":
+        raise ValueError("unsupported Agent 4-6 artifact type")
+    if analysis.get("schema_version") != 1:
+        raise ValueError("unsupported Agent 4-6 schema version")
+
+    for root_cause in analysis.get("root_causes", []):
+        conn.execute(
+            "INSERT OR REPLACE INTO root_causes "
+            "(cluster_id, batch_id, failure_type, explanation, contributing_factors) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (
+                root_cause["cluster_id"], root_cause["batch_id"], root_cause["failure_type"],
+                root_cause["explanation"], json.dumps(root_cause["contributing_factors"]),
+            ),
+        )
+
+    for priority in analysis.get("priority_scores", []):
+        conn.execute(
+            "INSERT OR REPLACE INTO priority_scores "
+            "(cluster_id, batch_id, frequency, severity, blast_radius, score, rank) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                priority["cluster_id"], priority["batch_id"], priority["frequency"],
+                priority["severity"], priority["blast_radius"], priority["score"],
+                priority["rank"],
+            ),
+        )
+
+    for replay in analysis.get("fix_replays", []):
+        conn.execute(
+            "INSERT OR REPLACE INTO fix_replays "
+            "(cluster_id, batch_id, failure_type, replay_mode, frequency_before_fix, "
+            "frequency_after_fix, pass_rate, probes_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                replay["cluster_id"], replay["batch_id"], replay["failure_type"],
+                replay["replay_mode"], replay["frequency_before_fix"],
+                replay["frequency_after_fix"], replay.get("pass_rate"),
+                json.dumps(replay.get("probes", [])),
+            ),
+        )
+
+
 def seed_database(db_path=DB_PATH, results_dir=RESULTS_DIR):
     before = json.loads((results_dir / "results_before.json").read_text())
     after = json.loads((results_dir / "results_after.json").read_text())
+    analysis_path = results_dir / "agent_4_6_output.json"
+    analysis = json.loads(analysis_path.read_text()) if analysis_path.exists() else None
     probes_path = results_dir / "regression_probes.json"
     probes = json.loads(probes_path.read_text()) if probes_path.exists() else None
 
@@ -88,6 +133,9 @@ def seed_database(db_path=DB_PATH, results_dir=RESULTS_DIR):
         _insert_batch(conn, "before", before, before["conversations_by_id"])
         # The after batch only needs cluster stats for the comparison.
         _insert_batch(conn, "after", after, {})
+
+        if analysis:
+            _insert_analysis(conn, analysis)
 
         if probes:
             for probe in probes["probes"]:

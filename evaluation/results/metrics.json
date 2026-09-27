@@ -19,15 +19,25 @@
     "n": 3
   },
   "analysis_latency": {
-    "detection_seconds": 0.0017,
-    "clustering_seconds": 1.4219,
+    "detection_seconds": 0.0034,
+    "clustering_seconds": 0.2127,
     "prioritization_seconds": 0.0,
-    "total_seconds": 1.4236,
+    "total_seconds": 0.2162,
     "conversations_analyzed": 60
   },
   "cost_per_analysis": {
     "mode": "local-only (offline heuristic judge, no API calls)",
     "llm_calls": 0,
     "estimated_cost_usd": 0.0
+  },
+  "analysis_side_runtime_cost": {
+    "mode": "mock_artifact",
+    "artifact_processing_seconds": 0.00067,
+    "root_cause_records": 7,
+    "priority_records": 7,
+    "fix_replay_records": 1,
+    "llm_calls": 0,
+    "estimated_cost_usd": 0.0,
+    "note": "Agents 4-6 are represented by a deterministic mock artifact; no generation calls were made."
   }
 }

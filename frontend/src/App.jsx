@@ -11,17 +11,27 @@ export default function App() {
   const [fixData, setFixData] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [evidence, setEvidence] = useState(null);
+  const [rootCause, setRootCause] = useState(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
   const [error, setError] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
 
   useEffect(() => {
-    Promise.all([api.summary(), api.clusters(), api.fixComparison()])
-      .then(([summaryData, clusterData, fixComparisonData]) => {
+    Promise.all([api.summary(), api.priority()])
+      .then(([summaryData, priorityData]) => {
+        const clusterData = priorityData.map((cluster) => ({
+          ...cluster,
+          priority_score: cluster.score,
+        }));
         setSummary(summaryData);
         setClusters(clusterData);
-        setFixData(fixComparisonData);
-        if (clusterData.length > 0) setSelectedId(clusterData[0].cluster_id);
+        if (clusterData.length > 0) {
+          setSelectedId(clusterData[0].cluster_id);
+          api
+            .clusterFixComparison(clusterData[0].cluster_id)
+            .then(setFixData)
+            .catch((err) => setError(err.message));
+        }
       })
       .catch((err) => setError(err.message));
   }, []);
@@ -30,9 +40,11 @@ export default function App() {
     if (selectedId === null) return;
     setEvidenceLoading(true);
     setEvidenceError(null);
-    api
-      .clusterEvidence(selectedId)
-      .then(setEvidence)
+    Promise.all([api.clusterEvidence(selectedId), api.clusterRootCause(selectedId)])
+      .then(([evidenceData, rootCauseData]) => {
+        setEvidence(evidenceData);
+        setRootCause(rootCauseData);
+      })
       .catch((err) => setEvidenceError(err.message))
       .finally(() => setEvidenceLoading(false));
   }, [selectedId]);
@@ -64,7 +76,12 @@ export default function App() {
 
       <section>
         <h2>Evidence</h2>
-        <EvidencePanel evidence={evidence} loading={evidenceLoading} error={evidenceError} />
+        <EvidencePanel
+          evidence={evidence}
+          rootCause={rootCause}
+          loading={evidenceLoading}
+          error={evidenceError}
+        />
       </section>
 
       <section>

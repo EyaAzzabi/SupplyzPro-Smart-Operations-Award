@@ -118,9 +118,122 @@ Clusters use the existing ranked cluster shape and include `batch_id`; findings 
 }
 ```
 
+## Member 2 analysis handoff
+
+The mock Agent 4-6 artifact is `results/agent_4_6_output.json`. It is a
+versioned handoff consumed by the database loader and backend; it does not
+change the Agent 1-3 artifact. Every analysis record uses the same composite
+cluster identity as the producer artifact: `(batch_id, cluster_id)`.
+
+```json
+{
+  "artifact_type": "xray.agent_4_6_output",
+  "schema_version": 1,
+  "consumer_of": "xray.agent_1_3_output",
+  "producer_stages": ["root_cause_analyst", "priority_strategist", "fix_replay"],
+  "root_causes": [
+    {
+      "batch_id": "before",
+      "cluster_id": 1,
+      "failure_type": "retry_loop_duplicate_order",
+      "explanation": "Human-readable root-cause explanation.",
+      "contributing_factors": ["factor one", "factor two"]
+    }
+  ],
+  "priority_scores": [
+    {
+      "batch_id": "before",
+      "cluster_id": 1,
+      "frequency": 10,
+      "severity": 3,
+      "blast_radius": 1,
+      "score": 30,
+      "rank": 1
+    }
+  ],
+  "fix_replays": [
+    {
+      "batch_id": "before",
+      "cluster_id": 1,
+      "failure_type": "retry_loop_duplicate_order",
+      "replay_mode": "aggregate",
+      "frequency_before_fix": 10,
+      "frequency_after_fix": 0,
+      "pass_rate": 1.0,
+      "probes": [
+        {"conversation_id": "probe_retry_loop_duplicate_order_00", "caught": true}
+      ]
+    }
+  ]
+}
+```
+
+`root_causes` and `priority_scores` contain one record per analyzed cluster.
+`fix_replays` contains one record per replay comparison and may contain a
+`probes` list. Version 1 uses `replay_mode: "aggregate"`: replay output is
+represented by before/after frequency deltas, detector pass rate, and probe
+outcomes rather than storing full replay transcripts. A future full replay
+artifact can add a `conversations` list without changing the cluster key.
+
+The priority fields are repeated intentionally at this handoff boundary so
+the analysis result is self-contained and auditable. The loader must verify
+that each referenced `(batch_id, cluster_id)` exists in Agent 1-3 output
+before inserting it into analysis tables.
+
 ## API shapes
 
+`GET /api/priority?batch=before` returns the Agent 5 ranked list. Results are
+ordered by `rank` and include the batch-scoped cluster identity, score inputs,
+the calculated score, and cluster display metadata:
+
+```json
+[
+  {
+    "cluster_id": 1,
+    "batch_id": "before",
+    "label": "Retry-loop duplicate orders (no idempotency check)",
+    "failure_type": "retry_loop_duplicate_order",
+    "frequency": 10,
+    "severity": 3,
+    "blast_radius": 1,
+    "score": 30,
+    "rank": 1,
+    "workflows_touched": ["purchase_order"]
+  }
+]
+```
+
+An existing batch with no priority rows returns an empty array. If the
+database has not been reseeded with the analysis schema, the endpoint returns
+HTTP 503 with a reseeding instruction.
+
+`GET /api/clusters/{cluster_id}/root-cause?batch=before` returns the Agent 4
+explanation for one batch-scoped cluster:
+
+```json
+{
+  "cluster_id": 1,
+  "batch_id": "before",
+  "label": "Retry-loop duplicate orders (no idempotency check)",
+  "failure_type": "retry_loop_duplicate_order",
+  "explanation": "Human-readable root-cause explanation.",
+  "contributing_factors": ["factor one", "factor two"]
+}
+```
+
+Unknown clusters and clusters without a root-cause record return HTTP 404. If
+the analysis table is missing because the database has not been reseeded, the
+endpoint returns HTTP 503.
+
 `GET /api/clusters?batch=before` returns an array of ranked cluster summaries. Each item includes `cluster_id`, `failure_type`, `label`, `frequency`, `severity`, `blast_radius`, `priority_score`, and `workflows_touched`.
+
+`GET /api/conversations/{conversation_id}?batch=before` returns one canonical
+conversation with its workflow, ground-truth failure type, and full transcript
+including tool calls. Unknown conversations return HTTP 404.
+
+`GET /api/failures?batch=before` returns a flat list of failure instances with
+their cluster identity, detector, description, and evidence turn IDs. A batch
+with no failures returns an empty array.
 
 `GET /api/clusters/{cluster_id}/evidence?batch=before` returns the cluster label and instances with their descriptions, `evidence_turn_ids`, and full transcript turns, including raw tool parameters and responses.
 
@@ -142,6 +255,9 @@ Clusters use the existing ranked cluster shape and include `batch_id`; findings 
 ```
 
 The legacy `GET /api/fix-comparison` remains available for the existing dashboard and returns the first seeded comparison. New clients should use the cluster-scoped route. Unknown clusters and clusters without replay data return HTTP 404.
+
+The cluster-scoped fix-comparison route reads `fix_replays`. Older databases
+that only contain `regression_probes` are supported as a temporary fallback.
 
 ## Validation
 

@@ -40,7 +40,7 @@ Everyone can start immediately — the layers are already wired together end to 
 - Today: own the schema — extend it if the AI or backend teams need new fields. Re-seed with `python -m database.seed_db` any time `results/` changes.
 
 **4. Backend** — `backend/`
-- `main.py` — FastAPI app: `/api/summary`, `/api/clusters`, `/api/clusters/{id}/evidence`, `/api/fix-comparison`.
+- `main.py` — FastAPI app: `/api/summary`, `/api/priority`, `/api/clusters`, `/api/clusters/{id}/root-cause`, `/api/clusters/{id}/evidence`, `/api/clusters/{id}/fix-comparison`, `/api/conversations/{id}`, `/api/failures`.
 - Today: harden/extend endpoints as the frontend needs them. Run with `uvicorn backend.main:app --reload --port 8000`; interactive docs at `/docs`.
 
 **5. Frontend** — `frontend/`

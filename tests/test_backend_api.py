@@ -26,6 +26,55 @@ class BackendAPITests(unittest.TestCase):
         self.database_patch.stop()
         self.temp_dir.cleanup()
 
+    def test_priority_returns_analysis_ranked_list(self):
+        response = self.client.get("/api/priority?batch=before")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 7)
+        self.assertEqual(data[0]["cluster_id"], 1)
+        self.assertEqual(data[0]["score"], 30)
+        self.assertEqual(data[0]["rank"], 1)
+
+    def test_root_cause_returns_batch_scoped_analysis(self):
+        response = self.client.get("/api/clusters/1/root-cause?batch=before")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["batch_id"], "before")
+        self.assertEqual(data["failure_type"], "retry_loop_duplicate_order")
+        self.assertIn("client timeout hides server success", data["contributing_factors"])
+
+    def test_root_cause_returns_404_for_missing_analysis_record(self):
+        response = self.client.get("/api/clusters/1/root-cause?batch=after")
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_fix_comparison_reads_analysis_replay(self):
+        response = self.client.get("/api/clusters/1/fix-comparison?batch=before")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["top_cluster_label"], "Retry-loop duplicate orders (no idempotency check)")
+        self.assertEqual(data["frequency_before_fix"], 10)
+        self.assertEqual(len(data["probes"]), 5)
+
+    def test_conversation_endpoint_returns_full_transcript(self):
+        response = self.client.get("/api/conversations/conv_0002?batch=before")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["conversation_id"], "conv_0002")
+        self.assertGreater(len(data["turns"]), 0)
+
+    def test_failures_endpoint_returns_flat_instances(self):
+        response = self.client.get("/api/failures?batch=before")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 28)
+        self.assertIn("evidence_turn_ids", data[0])
+
     def test_cluster_fix_comparison_returns_only_requested_baseline_cluster(self):
         response = self.client.get("/api/clusters/1/fix-comparison?batch=before")
 

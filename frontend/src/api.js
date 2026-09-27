@@ -11,7 +11,15 @@ async function get(path) {
 export const api = {
   summary: () => get("/api/summary"),
   clusters: (batch = "before") => get(`/api/clusters?batch=${batch}`),
+  priority: (batch = "before") => get(`/api/priority?batch=${batch}`),
   clusterEvidence: (clusterId, batch = "before") =>
     get(`/api/clusters/${clusterId}/evidence?batch=${batch}`),
+  clusterRootCause: (clusterId, batch = "before") =>
+    get(`/api/clusters/${clusterId}/root-cause?batch=${batch}`),
+  clusterFixComparison: (clusterId, batch = "before") =>
+    get(`/api/clusters/${clusterId}/fix-comparison?batch=${batch}`),
+  conversation: (conversationId, batch = "before") =>
+    get(`/api/conversations/${conversationId}?batch=${batch}`),
+  failures: (batch = "before") => get(`/api/failures?batch=${batch}`),
   fixComparison: () => get("/api/fix-comparison"),
 };

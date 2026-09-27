@@ -76,6 +76,92 @@ def get_clusters(batch: str = "before"):
     ]
 
 
+@app.get("/api/priority")
+def get_priority(batch: str = "before"):
+    conn = get_conn()
+    try:
+        rows = conn.execute(
+            "SELECT p.cluster_id, p.batch_id, c.label, c.failure_type, "
+            "p.frequency, p.severity, p.blast_radius, p.score, p.rank, "
+            "c.workflows_touched "
+            "FROM priority_scores p "
+            "JOIN clusters c ON c.cluster_id = p.cluster_id AND c.batch_id = p.batch_id "
+            "WHERE p.batch_id = ? ORDER BY p.rank ASC, p.score DESC",
+            (batch,),
+        ).fetchall()
+    except sqlite3.OperationalError as exc:
+        if "no such table: priority_scores" in str(exc):
+            raise HTTPException(
+                status_code=503,
+                detail="Priority data not seeded yet. Run `python -m database.seed_db`.",
+            ) from exc
+        raise
+    finally:
+        conn.close()
+
+    return [
+        {
+            "cluster_id": row["cluster_id"],
+            "batch_id": row["batch_id"],
+            "label": row["label"],
+            "failure_type": row["failure_type"],
+            "frequency": row["frequency"],
+            "severity": row["severity"],
+            "blast_radius": row["blast_radius"],
+            "score": row["score"],
+            "rank": row["rank"],
+            "workflows_touched": row["workflows_touched"].split(","),
+        }
+        for row in rows
+    ]
+
+
+@app.get("/api/clusters/{cluster_id}/root-cause")
+def get_cluster_root_cause(cluster_id: int, batch: str = "before"):
+    conn = get_conn()
+    try:
+        cluster = conn.execute(
+            "SELECT cluster_id, batch_id, label, failure_type "
+            "FROM clusters WHERE cluster_id = ? AND batch_id = ?",
+            (cluster_id, batch),
+        ).fetchone()
+        if cluster is None:
+            raise HTTPException(status_code=404, detail="Cluster not found")
+
+        try:
+            root_cause = conn.execute(
+                "SELECT explanation, contributing_factors "
+                "FROM root_causes WHERE cluster_id = ? AND batch_id = ?",
+                (cluster_id, batch),
+            ).fetchone()
+        except sqlite3.OperationalError as exc:
+            if "no such table: root_causes" in str(exc):
+                raise HTTPException(
+                    status_code=503,
+                    detail="Root-cause data not seeded yet. Run `python -m database.seed_db`.",
+                ) from exc
+            raise
+
+        if root_cause is None:
+            raise HTTPException(status_code=404, detail="Root cause not found")
+
+        try:
+            contributing_factors = json.loads(root_cause["contributing_factors"])
+        except json.JSONDecodeError as exc:
+            raise HTTPException(status_code=500, detail="Malformed root-cause data") from exc
+
+        return {
+            "cluster_id": cluster["cluster_id"],
+            "batch_id": cluster["batch_id"],
+            "label": cluster["label"],
+            "failure_type": cluster["failure_type"],
+            "explanation": root_cause["explanation"],
+            "contributing_factors": contributing_factors,
+        }
+    finally:
+        conn.close()
+
+
 def _get_turns(conn, conversation_id, batch):
     rows = conn.execute(
         "SELECT t.id, t.turn_number, t.role, t.text, "
@@ -98,6 +184,55 @@ def _get_turns(conn, conversation_id, batch):
             }
         turns.append(turn)
     return turns
+
+
+@app.get("/api/conversations/{conversation_id}")
+def get_conversation(conversation_id: str, batch: str = "before"):
+    conn = get_conn()
+    try:
+        conversation = conn.execute(
+            "SELECT conversation_id, batch_id, workflow, failure_type "
+            "FROM conversations WHERE conversation_id = ? AND batch_id = ?",
+            (conversation_id, batch),
+        ).fetchone()
+        if conversation is None:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        return {
+            "conversation_id": conversation["conversation_id"],
+            "batch_id": conversation["batch_id"],
+            "workflow": conversation["workflow"],
+            "failure_type": conversation["failure_type"],
+            "turns": _get_turns(conn, conversation_id, batch),
+        }
+    finally:
+        conn.close()
+
+
+@app.get("/api/failures")
+def get_failures(batch: str = "before"):
+    conn = get_conn()
+    try:
+        rows = conn.execute(
+            "SELECT instance_id, cluster_id, batch_id, conversation_id, detector, "
+            "failure_type, description, evidence_turn_ids "
+            "FROM failure_instances WHERE batch_id = ? ORDER BY instance_id",
+            (batch,),
+        ).fetchall()
+        return [
+            {
+                "instance_id": row["instance_id"],
+                "cluster_id": row["cluster_id"],
+                "batch_id": row["batch_id"],
+                "conversation_id": row["conversation_id"],
+                "detector": row["detector"],
+                "failure_type": row["failure_type"],
+                "description": row["description"],
+                "evidence_turn_ids": [int(turn_id) for turn_id in row["evidence_turn_ids"].split(",")],
+            }
+            for row in rows
+        ]
+    finally:
+        conn.close()
 
 
 @app.get("/api/clusters/{cluster_id}/evidence")
@@ -137,23 +272,79 @@ def get_cluster_evidence(cluster_id: int, batch: str = "before"):
 def get_fix_comparison():
     conn = get_conn()
     try:
-        first = conn.execute(
-            "SELECT cluster_id, batch_id FROM regression_probes ORDER BY probe_id LIMIT 1"
-        ).fetchone()
+        try:
+            first = conn.execute(
+                "SELECT cluster_id, batch_id FROM fix_replays ORDER BY replay_id LIMIT 1"
+            ).fetchone()
+        except sqlite3.OperationalError as exc:
+            if "no such table: fix_replays" not in str(exc):
+                raise
+            first = None
         if first is None:
-            raise HTTPException(status_code=404, detail="No regression probe data available")
+            try:
+                first = conn.execute(
+                    "SELECT cluster_id, batch_id FROM regression_probes "
+                    "ORDER BY probe_id LIMIT 1"
+                ).fetchone()
+            except sqlite3.OperationalError as exc:
+                if "no such table: regression_probes" in str(exc):
+                    first = None
+                else:
+                    raise
+        if first is None:
+            raise HTTPException(status_code=404, detail="No fix replay data available")
         return _build_fix_comparison(conn, first["cluster_id"], first["batch_id"])
     finally:
         conn.close()
 
 
 def _build_fix_comparison(conn, cluster_id, batch):
-    probes = conn.execute(
-        "SELECT * FROM regression_probes WHERE cluster_id = ? AND batch_id = ? ORDER BY probe_id",
-        (cluster_id, batch),
-    ).fetchall()
+    try:
+        replay = conn.execute(
+            "SELECT r.cluster_id, r.batch_id, c.label, r.failure_type, "
+            "r.frequency_before_fix, r.frequency_after_fix, r.pass_rate, r.probes_json "
+            "FROM fix_replays r "
+            "JOIN clusters c ON c.cluster_id = r.cluster_id AND c.batch_id = r.batch_id "
+            "WHERE r.cluster_id = ? AND r.batch_id = ?",
+            (cluster_id, batch),
+        ).fetchone()
+    except sqlite3.OperationalError as exc:
+        if "no such table: fix_replays" not in str(exc):
+            raise
+        replay = None
+
+    if replay is not None:
+        try:
+            probes = json.loads(replay["probes_json"])
+        except json.JSONDecodeError as exc:
+            raise HTTPException(status_code=500, detail="Malformed fix replay data") from exc
+        return {
+            "cluster_id": replay["cluster_id"],
+            "batch_id": replay["batch_id"],
+            "top_failure_type": replay["failure_type"],
+            "top_cluster_label": replay["label"],
+            "frequency_before_fix": replay["frequency_before_fix"],
+            "frequency_after_fix": replay["frequency_after_fix"],
+            "pass_rate": replay["pass_rate"],
+            "probes": [
+                {"conversation_id": probe["conversation_id"], "caught": bool(probe["caught"])}
+                for probe in probes
+            ],
+        }
+
+    try:
+        probes = conn.execute(
+            "SELECT * FROM regression_probes WHERE cluster_id = ? AND batch_id = ? "
+            "ORDER BY probe_id",
+            (cluster_id, batch),
+        ).fetchall()
+    except sqlite3.OperationalError as exc:
+        if "no such table: regression_probes" in str(exc):
+            probes = []
+        else:
+            raise
     if not probes:
-        raise HTTPException(status_code=404, detail="No regression probe data for this cluster")
+        raise HTTPException(status_code=404, detail="No fix replay data for this cluster")
 
     first = probes[0]
     return {
@@ -165,8 +356,8 @@ def _build_fix_comparison(conn, cluster_id, batch):
         "frequency_after_fix": first["frequency_after_fix"],
         "pass_rate": first["pass_rate"],
         "probes": [
-            {"conversation_id": p["conversation_id"], "caught": bool(p["caught"])}
-            for p in probes
+            {"conversation_id": probe["conversation_id"], "caught": bool(probe["caught"])}
+            for probe in probes
         ],
     }
 

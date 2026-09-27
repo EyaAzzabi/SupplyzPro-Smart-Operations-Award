@@ -1,0 +1,88 @@
+{
+  "artifact_type": "xray.agent_4_6_output",
+  "schema_version": 1,
+  "consumer_of": "xray.agent_1_3_output",
+  "producer_stages": [
+    "root_cause_analyst",
+    "priority_strategist",
+    "fix_replay"
+  ],
+  "root_causes": [
+    {
+      "batch_id": "before",
+      "cluster_id": 1,
+      "failure_type": "retry_loop_duplicate_order",
+      "explanation": "A client-visible timeout is treated as proof that order creation failed, even though the server confirmed the first request. The retry creates a second purchase order because the operation is not made idempotent or checked before retrying.",
+      "contributing_factors": ["client timeout hides server success", "retry path does not check prior state", "idempotency is not enforced"]
+    },
+    {
+      "batch_id": "before",
+      "cluster_id": 5,
+      "failure_type": "silent_tool_failure",
+      "explanation": "The tool returns an explicit failure payload, but the agent treats the call as successful and reports completion. The response contract is not being checked before the user-facing confirmation.",
+      "contributing_factors": ["success:false is ignored", "confirmation is generated without verification"]
+    },
+    {
+      "batch_id": "before",
+      "cluster_id": 2,
+      "failure_type": "hallucinated_tool_result",
+      "explanation": "The agent states a quantity that is not supported by the inventory response. The response is available, but the final claim is generated from an inconsistent or fabricated value.",
+      "contributing_factors": ["raw tool response is not treated as authoritative", "answer generation is not grounded in returned fields"]
+    },
+    {
+      "batch_id": "before",
+      "cluster_id": 6,
+      "failure_type": "no_progress_search_loop",
+      "explanation": "The agent repeats the same read-only lookup without changing parameters, state, or user-facing progress. No loop guard or escalation path stops repeated work.",
+      "contributing_factors": ["duplicate-call threshold is missing", "no progress state is tracked"]
+    },
+    {
+      "batch_id": "before",
+      "cluster_id": 0,
+      "failure_type": "wrong_tool_or_target",
+      "explanation": "The agent selects or calls a valid tool for the wrong record, so the returned data can be internally correct while answering a different user request.",
+      "contributing_factors": ["requested entity is not verified against parameters", "tool target is not reconciled with the user request"]
+    },
+    {
+      "batch_id": "before",
+      "cluster_id": 4,
+      "failure_type": "context_collapse",
+      "explanation": "A constraint established earlier in the conversation is dropped when the final tool call is assembled. The agent confirms the action without acknowledging that the target changed.",
+      "contributing_factors": ["constraints are not carried into execution state", "final parameters are not checked against conversation context"]
+    },
+    {
+      "batch_id": "before",
+      "cluster_id": 3,
+      "failure_type": "user_frustration_signal",
+      "explanation": "The user repeats or rephrases the request because the agent has not resolved it. This is an observable workflow signal that the conversation is failing even without a tool error.",
+      "contributing_factors": ["repeated requests are not tracked", "there is no escalation after unresolved turns"]
+    }
+  ],
+  "priority_scores": [
+    {"batch_id": "before", "cluster_id": 1, "frequency": 10, "severity": 3, "blast_radius": 1, "score": 30, "rank": 1},
+    {"batch_id": "before", "cluster_id": 5, "frequency": 3, "severity": 3, "blast_radius": 1, "score": 9, "rank": 2},
+    {"batch_id": "before", "cluster_id": 2, "frequency": 3, "severity": 3, "blast_radius": 1, "score": 9, "rank": 3},
+    {"batch_id": "before", "cluster_id": 6, "frequency": 3, "severity": 2, "blast_radius": 1, "score": 6, "rank": 4},
+    {"batch_id": "before", "cluster_id": 0, "frequency": 3, "severity": 2, "blast_radius": 1, "score": 6, "rank": 5},
+    {"batch_id": "before", "cluster_id": 4, "frequency": 3, "severity": 2, "blast_radius": 1, "score": 6, "rank": 6},
+    {"batch_id": "before", "cluster_id": 3, "frequency": 3, "severity": 1, "blast_radius": 1, "score": 3, "rank": 7}
+  ],
+  "fix_replays": [
+    {
+      "batch_id": "before",
+      "cluster_id": 1,
+      "failure_type": "retry_loop_duplicate_order",
+      "replay_mode": "aggregate",
+      "frequency_before_fix": 10,
+      "frequency_after_fix": 0,
+      "pass_rate": 1.0,
+      "probes": [
+        {"conversation_id": "probe_retry_loop_duplicate_order_00", "caught": true},
+        {"conversation_id": "probe_retry_loop_duplicate_order_01", "caught": true},
+        {"conversation_id": "probe_retry_loop_duplicate_order_02", "caught": true},
+        {"conversation_id": "probe_retry_loop_duplicate_order_03", "caught": true},
+        {"conversation_id": "probe_retry_loop_duplicate_order_04", "caught": true}
+      ]
+    }
+  ]
+}

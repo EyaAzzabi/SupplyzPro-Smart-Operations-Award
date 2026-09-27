@@ -81,8 +81,53 @@ CREATE TABLE IF NOT EXISTS regression_probes (
     FOREIGN KEY (cluster_id, batch_id) REFERENCES clusters(cluster_id, batch_id)
 );
 
+-- One Agent 4 root-cause explanation per batch-scoped cluster.
+CREATE TABLE IF NOT EXISTS root_causes (
+    root_cause_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    cluster_id          INTEGER NOT NULL,
+    batch_id            TEXT NOT NULL,
+    failure_type        TEXT NOT NULL,
+    explanation         TEXT NOT NULL,
+    contributing_factors TEXT NOT NULL,         -- JSON array
+    UNIQUE (cluster_id, batch_id),
+    FOREIGN KEY (cluster_id, batch_id) REFERENCES clusters(cluster_id, batch_id)
+);
+
+-- One Agent 5 ranking record per batch-scoped cluster.
+CREATE TABLE IF NOT EXISTS priority_scores (
+    priority_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    cluster_id          INTEGER NOT NULL,
+    batch_id            TEXT NOT NULL,
+    frequency           INTEGER NOT NULL,
+    severity            INTEGER NOT NULL,
+    blast_radius        INTEGER NOT NULL,
+    score               INTEGER NOT NULL,
+    rank                INTEGER NOT NULL,
+    UNIQUE (cluster_id, batch_id),
+    FOREIGN KEY (cluster_id, batch_id) REFERENCES clusters(cluster_id, batch_id)
+);
+
+-- One Agent 6 aggregate replay comparison per tested cluster. Probe outcomes
+-- remain JSON because version 1 does not persist full replay transcripts.
+CREATE TABLE IF NOT EXISTS fix_replays (
+    replay_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    cluster_id          INTEGER NOT NULL,
+    batch_id            TEXT NOT NULL,
+    failure_type        TEXT NOT NULL,
+    replay_mode         TEXT NOT NULL CHECK (replay_mode IN ('aggregate', 'full')),
+    frequency_before_fix INTEGER NOT NULL,
+    frequency_after_fix  INTEGER NOT NULL,
+    pass_rate            REAL,
+    probes_json         TEXT NOT NULL,           -- JSON array of probe outcomes
+    UNIQUE (cluster_id, batch_id),
+    FOREIGN KEY (cluster_id, batch_id) REFERENCES clusters(cluster_id, batch_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_turns_conversation ON turns(conversation_id, batch_id);
 CREATE INDEX IF NOT EXISTS idx_tool_calls_turn ON tool_calls(turn_id);
 CREATE INDEX IF NOT EXISTS idx_clusters_batch_score ON clusters(batch_id, priority_score DESC);
 CREATE INDEX IF NOT EXISTS idx_failure_instances_cluster ON failure_instances(cluster_id, batch_id);
 CREATE INDEX IF NOT EXISTS idx_failure_instances_conversation ON failure_instances(conversation_id, batch_id);
+CREATE INDEX IF NOT EXISTS idx_root_causes_cluster ON root_causes(cluster_id, batch_id);
+CREATE INDEX IF NOT EXISTS idx_priority_scores_rank ON priority_scores(batch_id, rank);
+CREATE INDEX IF NOT EXISTS idx_fix_replays_cluster ON fix_replays(cluster_id, batch_id);
