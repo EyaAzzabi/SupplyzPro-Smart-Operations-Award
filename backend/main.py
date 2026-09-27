@@ -1,4 +1,4 @@
-"""FailureLens API -- serves the database to the frontend.
+"""X-Ray API -- serves the database to the frontend.
 
 Run: uvicorn backend.main:app --reload --port 8000
 Docs: http://localhost:8000/docs
@@ -11,9 +11,9 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-DB_PATH = Path(__file__).parent.parent / "database" / "failurelens.db"
+DB_PATH = Path(__file__).parent.parent / "database" / "xray.db"
 
-app = FastAPI(title="FailureLens API")
+app = FastAPI(title="X-Ray API")
 
 app.add_middleware(
     CORSMiddleware,

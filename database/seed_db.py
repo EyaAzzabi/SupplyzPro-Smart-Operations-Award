@@ -1,4 +1,4 @@
-"""Loads the AI layer's output (results/*.json) into failurelens.db.
+"""Loads the AI layer's output (results/*.json) into xray.db.
 
 The AI layer (ai/run_pipeline.py) stays storage-agnostic -- it just writes
 JSON. This script is the one place that knows about the database, so the
@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 RESULTS_DIR = ROOT / "results"
-DB_PATH = Path(__file__).parent / "failurelens.db"
+DB_PATH = Path(__file__).parent / "xray.db"
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 
 

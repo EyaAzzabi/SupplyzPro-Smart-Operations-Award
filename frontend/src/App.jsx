@@ -40,7 +40,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🔍 FailureLens</h1>
+        <h1>🩻 X-Ray</h1>
         <p className="tagline">
           We don't just find bugs in AI-agent conversations — we group them by root cause,
           rank them by real impact, and prove a fix works.
@@ -76,6 +76,7 @@ export default function App() {
         represent plausible SupplyzPro workflows with deliberately seeded failure patterns. AI
         tools used: an LLM-as-judge (NVIDIA NIM-hosted model, or an offline heuristic fallback)
         for hallucination/wrong-target detection, and TF-IDF/KMeans for root-cause clustering.
+        NVIDIA Brev: not used — no GPU compute was required for this project.
       </footer>
     </div>
   );

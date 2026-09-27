@@ -1,4 +1,4 @@
-"""Runs the full FailureLens pipeline end to end:
+"""Runs the full X-Ray pipeline end to end:
 
   1. load conversations (before/after)
   2. detect failures in layers (rules + LLM-judge + behavioral)

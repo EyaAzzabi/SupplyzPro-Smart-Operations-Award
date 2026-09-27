@@ -1,4 +1,4 @@
--- FailureLens database schema.
+-- X-Ray database schema.
 -- One SQLite file, populated by database/seed_db.py from the AI layer's
 -- output (ai/run_pipeline.py). The backend reads from this, never from
 -- the raw JSON files, once seeded.
