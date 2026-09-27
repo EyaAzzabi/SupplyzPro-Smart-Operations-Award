@@ -1,0 +1,29 @@
+{
+  "top_failure_type": "retry_loop_duplicate_order",
+  "top_cluster_label": "Retry-loop duplicate orders (no idempotency check)",
+  "frequency_before_fix": 10,
+  "frequency_after_fix": 0,
+  "pass_rate": 1.0,
+  "probes": [
+    {
+      "conversation_id": "probe_retry_loop_duplicate_order_00",
+      "caught": true
+    },
+    {
+      "conversation_id": "probe_retry_loop_duplicate_order_01",
+      "caught": true
+    },
+    {
+      "conversation_id": "probe_retry_loop_duplicate_order_02",
+      "caught": true
+    },
+    {
+      "conversation_id": "probe_retry_loop_duplicate_order_03",
+      "caught": true
+    },
+    {
+      "conversation_id": "probe_retry_loop_duplicate_order_04",
+      "caught": true
+    }
+  ]
+}

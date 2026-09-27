@@ -1,0 +1,228 @@
+{
+  "clusters": [
+    {
+      "cluster_id": 1,
+      "failure_type": "silent_tool_failure",
+      "label": "Silent tool failures (error caught, never surfaced)",
+      "instances": [
+        {
+          "conversation_id": "conv_0016",
+          "workflow": "shipment_tracking",
+          "detector": "rule:silent_tool_failure",
+          "failure_type": "silent_tool_failure",
+          "description": "Tool 'update_shipment_eta' returned an error/failure (invalid_date_format) but the agent told the user it succeeded.",
+          "evidence_turn_ids": [
+            2
+          ]
+        },
+        {
+          "conversation_id": "conv_0021",
+          "workflow": "shipment_tracking",
+          "detector": "rule:silent_tool_failure",
+          "failure_type": "silent_tool_failure",
+          "description": "Tool 'update_shipment_eta' returned an error/failure (invalid_date_format) but the agent told the user it succeeded.",
+          "evidence_turn_ids": [
+            2
+          ]
+        },
+        {
+          "conversation_id": "conv_0011",
+          "workflow": "shipment_tracking",
+          "detector": "rule:silent_tool_failure",
+          "failure_type": "silent_tool_failure",
+          "description": "Tool 'update_shipment_eta' returned an error/failure (invalid_date_format) but the agent told the user it succeeded.",
+          "evidence_turn_ids": [
+            2
+          ]
+        }
+      ],
+      "frequency": 3,
+      "workflows_touched": [
+        "shipment_tracking"
+      ],
+      "severity": 3,
+      "blast_radius": 1,
+      "priority_score": 9
+    },
+    {
+      "cluster_id": 3,
+      "failure_type": "hallucinated_tool_result",
+      "label": "Hallucinated tool results (claim != actual data)",
+      "instances": [
+        {
+          "conversation_id": "conv_0022",
+          "workflow": "inventory_check",
+          "detector": "llm_judge:hallucinated_tool_result",
+          "failure_type": "hallucinated_tool_result",
+          "description": "Agent's claim in turn 2 does not match the raw response from 'check_inventory'. agent's stated quantity does not match the tool's raw response",
+          "evidence_turn_ids": [
+            2
+          ]
+        },
+        {
+          "conversation_id": "conv_0017",
+          "workflow": "inventory_check",
+          "detector": "llm_judge:hallucinated_tool_result",
+          "failure_type": "hallucinated_tool_result",
+          "description": "Agent's claim in turn 2 does not match the raw response from 'check_inventory'. agent's stated quantity does not match the tool's raw response",
+          "evidence_turn_ids": [
+            2
+          ]
+        },
+        {
+          "conversation_id": "conv_0012",
+          "workflow": "inventory_check",
+          "detector": "llm_judge:hallucinated_tool_result",
+          "failure_type": "hallucinated_tool_result",
+          "description": "Agent's claim in turn 2 does not match the raw response from 'check_inventory'. agent's stated quantity does not match the tool's raw response",
+          "evidence_turn_ids": [
+            2
+          ]
+        }
+      ],
+      "frequency": 3,
+      "workflows_touched": [
+        "inventory_check"
+      ],
+      "severity": 3,
+      "blast_radius": 1,
+      "priority_score": 9
+    },
+    {
+      "cluster_id": 4,
+      "failure_type": "context_collapse",
+      "label": "Context collapse (earlier constraint silently dropped)",
+      "instances": [
+        {
+          "conversation_id": "conv_0024",
+          "workflow": "purchase_order",
+          "detector": "behavioral:context_collapse",
+          "failure_type": "context_collapse",
+          "description": "User asked for warehouse 'WH-2' earlier in the conversation, but the tool call in turn 4 used 'WH-1' instead, with no confirmation of the change.",
+          "evidence_turn_ids": [
+            4
+          ]
+        },
+        {
+          "conversation_id": "conv_0014",
+          "workflow": "purchase_order",
+          "detector": "behavioral:context_collapse",
+          "failure_type": "context_collapse",
+          "description": "User asked for warehouse 'WH-2' earlier in the conversation, but the tool call in turn 4 used 'WH-1' instead, with no confirmation of the change.",
+          "evidence_turn_ids": [
+            4
+          ]
+        },
+        {
+          "conversation_id": "conv_0019",
+          "workflow": "purchase_order",
+          "detector": "behavioral:context_collapse",
+          "failure_type": "context_collapse",
+          "description": "User asked for warehouse 'WH-2' earlier in the conversation, but the tool call in turn 4 used 'WH-1' instead, with no confirmation of the change.",
+          "evidence_turn_ids": [
+            4
+          ]
+        }
+      ],
+      "frequency": 3,
+      "workflows_touched": [
+        "purchase_order"
+      ],
+      "severity": 2,
+      "blast_radius": 1,
+      "priority_score": 6
+    },
+    {
+      "cluster_id": 0,
+      "failure_type": "wrong_tool_or_target",
+      "label": "Wrong tool/target selected (right intent, wrong record)",
+      "instances": [
+        {
+          "conversation_id": "conv_0013",
+          "workflow": "supplier_lookup",
+          "detector": "llm_judge:wrong_tool_or_target",
+          "failure_type": "wrong_tool_or_target",
+          "description": "'get_supplier_info' in turn 2 was called against a different record than the one the user asked about. tool was called against a different named entity than the user requested",
+          "evidence_turn_ids": [
+            2
+          ]
+        },
+        {
+          "conversation_id": "conv_0018",
+          "workflow": "supplier_lookup",
+          "detector": "llm_judge:wrong_tool_or_target",
+          "failure_type": "wrong_tool_or_target",
+          "description": "'get_supplier_info' in turn 2 was called against a different record than the one the user asked about. tool was called against a different named entity than the user requested",
+          "evidence_turn_ids": [
+            2
+          ]
+        },
+        {
+          "conversation_id": "conv_0023",
+          "workflow": "supplier_lookup",
+          "detector": "llm_judge:wrong_tool_or_target",
+          "failure_type": "wrong_tool_or_target",
+          "description": "'get_supplier_info' in turn 2 was called against a different record than the one the user asked about. tool was called against a different named entity than the user requested",
+          "evidence_turn_ids": [
+            2
+          ]
+        }
+      ],
+      "frequency": 3,
+      "workflows_touched": [
+        "supplier_lookup"
+      ],
+      "severity": 2,
+      "blast_radius": 1,
+      "priority_score": 6
+    },
+    {
+      "cluster_id": 2,
+      "failure_type": "user_frustration_signal",
+      "label": "User-frustration signal (repeated rephrasing)",
+      "instances": [
+        {
+          "conversation_id": "conv_0020",
+          "workflow": "inventory_check",
+          "detector": "behavioral:user_frustration_signal",
+          "failure_type": "user_frustration_signal",
+          "description": "User had to rephrase the same request across turns 1 and 3 -- never logged anywhere as a system issue.",
+          "evidence_turn_ids": [
+            1,
+            3
+          ]
+        },
+        {
+          "conversation_id": "conv_0025",
+          "workflow": "inventory_check",
+          "detector": "behavioral:user_frustration_signal",
+          "failure_type": "user_frustration_signal",
+          "description": "User had to rephrase the same request across turns 1 and 3 -- never logged anywhere as a system issue.",
+          "evidence_turn_ids": [
+            1,
+            3
+          ]
+        },
+        {
+          "conversation_id": "conv_0015",
+          "workflow": "inventory_check",
+          "detector": "behavioral:user_frustration_signal",
+          "failure_type": "user_frustration_signal",
+          "description": "User had to rephrase the same request across turns 1 and 3 -- never logged anywhere as a system issue.",
+          "evidence_turn_ids": [
+            1,
+            3
+          ]
+        }
+      ],
+      "frequency": 3,
+      "workflows_touched": [
+        "inventory_check"
+      ],
+      "severity": 1,
+      "blast_radius": 1,
+      "priority_score": 3
+    }
+  ],
+  "total_conversations": 60
+}
