@@ -72,38 +72,45 @@ def _insert_batch(conn, batch_id, results, conversations_by_id):
             )
 
 
-def main():
-    before = json.loads((RESULTS_DIR / "results_before.json").read_text())
-    after = json.loads((RESULTS_DIR / "results_after.json").read_text())
-    probes_path = RESULTS_DIR / "regression_probes.json"
+def seed_database(db_path=DB_PATH, results_dir=RESULTS_DIR):
+    before = json.loads((results_dir / "results_before.json").read_text())
+    after = json.loads((results_dir / "results_after.json").read_text())
+    probes_path = results_dir / "regression_probes.json"
     probes = json.loads(probes_path.read_text()) if probes_path.exists() else None
 
-    if DB_PATH.exists():
-        DB_PATH.unlink()
+    if db_path.exists():
+        db_path.unlink()
 
-    conn = sqlite3.connect(DB_PATH)
-    conn.executescript(SCHEMA_PATH.read_text())
+    conn = sqlite3.connect(db_path)
+    try:
+        conn.executescript(SCHEMA_PATH.read_text())
 
-    _insert_batch(conn, "before", before, before["conversations_by_id"])
-    # the "after" batch's conversations aren't needed for evidence drill-down
-    # (there's nothing to show -- that's the point), only its cluster stats
-    _insert_batch(conn, "after", after, {})
+        _insert_batch(conn, "before", before, before["conversations_by_id"])
+        # The after batch only needs cluster stats for the comparison.
+        _insert_batch(conn, "after", after, {})
 
-    if probes:
-        for probe in probes["probes"]:
-            conn.execute(
-                "INSERT INTO regression_probes "
-                "(top_failure_type, top_cluster_label, frequency_before_fix, frequency_after_fix, "
-                "pass_rate, conversation_id, caught) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (
-                    probes["top_failure_type"], probes["top_cluster_label"],
-                    probes["frequency_before_fix"], probes["frequency_after_fix"],
-                    probes["pass_rate"], probe["conversation_id"], int(probe["caught"]),
-                ),
-            )
+        if probes:
+            for probe in probes["probes"]:
+                conn.execute(
+                    "INSERT INTO regression_probes "
+                    "(cluster_id, batch_id, top_failure_type, top_cluster_label, "
+                    "frequency_before_fix, frequency_after_fix, pass_rate, conversation_id, caught) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        probes["cluster_id"], probes["batch_id"], probes["top_failure_type"],
+                        probes["top_cluster_label"], probes["frequency_before_fix"],
+                        probes["frequency_after_fix"], probes["pass_rate"],
+                        probe["conversation_id"], int(probe["caught"]),
+                    ),
+                )
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def main():
+    seed_database()
     print(f"Seeded {DB_PATH}")
 
 

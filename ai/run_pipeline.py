@@ -75,6 +75,8 @@ def main():
         after_freq = after_match["frequency"] if after_match else 0
 
         (RESULTS_DIR / "regression_probes.json").write_text(json.dumps({
+            "batch_id": "before",
+            "cluster_id": clusters_before[0]["cluster_id"],
             "top_failure_type": top_failure_type,
             "top_cluster_label": clusters_before[0]["label"],
             "frequency_before_fix": before_freq,

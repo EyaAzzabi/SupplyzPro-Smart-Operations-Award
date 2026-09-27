@@ -136,13 +136,29 @@ def get_cluster_evidence(cluster_id: int, batch: str = "before"):
 @app.get("/api/fix-comparison")
 def get_fix_comparison():
     conn = get_conn()
-    probes = conn.execute("SELECT * FROM regression_probes").fetchall()
-    conn.close()
+    try:
+        first = conn.execute(
+            "SELECT cluster_id, batch_id FROM regression_probes ORDER BY probe_id LIMIT 1"
+        ).fetchone()
+        if first is None:
+            raise HTTPException(status_code=404, detail="No regression probe data available")
+        return _build_fix_comparison(conn, first["cluster_id"], first["batch_id"])
+    finally:
+        conn.close()
+
+
+def _build_fix_comparison(conn, cluster_id, batch):
+    probes = conn.execute(
+        "SELECT * FROM regression_probes WHERE cluster_id = ? AND batch_id = ? ORDER BY probe_id",
+        (cluster_id, batch),
+    ).fetchall()
     if not probes:
-        raise HTTPException(status_code=404, detail="No regression probe data available")
+        raise HTTPException(status_code=404, detail="No regression probe data for this cluster")
 
     first = probes[0]
     return {
+        "cluster_id": first["cluster_id"],
+        "batch_id": first["batch_id"],
         "top_failure_type": first["top_failure_type"],
         "top_cluster_label": first["top_cluster_label"],
         "frequency_before_fix": first["frequency_before_fix"],
@@ -153,6 +169,21 @@ def get_fix_comparison():
             for p in probes
         ],
     }
+
+
+@app.get("/api/clusters/{cluster_id}/fix-comparison")
+def get_cluster_fix_comparison(cluster_id: int, batch: str = "before"):
+    conn = get_conn()
+    try:
+        cluster = conn.execute(
+            "SELECT cluster_id FROM clusters WHERE cluster_id = ? AND batch_id = ?",
+            (cluster_id, batch),
+        ).fetchone()
+        if cluster is None:
+            raise HTTPException(status_code=404, detail="Cluster not found")
+        return _build_fix_comparison(conn, cluster_id, batch)
+    finally:
+        conn.close()
 
 
 @app.get("/api/health")

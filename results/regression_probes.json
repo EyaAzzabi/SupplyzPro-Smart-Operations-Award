@@ -1,4 +1,6 @@
 {
+  "batch_id": "before",
+  "cluster_id": 1,
   "top_failure_type": "retry_loop_duplicate_order",
   "top_cluster_label": "Retry-loop duplicate orders (no idempotency check)",
   "frequency_before_fix": 10,

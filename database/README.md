@@ -16,6 +16,8 @@ regression_probes  one row per generated regression-test conversation for the to
 
 `conversations` -> `turns` -> `tool_calls` is a normal 1-to-many chain, joined on `id`, not stringly-typed IDs. `clusters` -> `failure_instances` the same. Only `failure_instances.evidence_turn_ids` and `clusters.workflows_touched` stay as comma-separated text — they're small, fixed-shape lists read as a whole, not queried into or filtered on, so normalizing them into their own tables would add joins without adding any real capability.
 
+Cluster IDs are scoped to a batch; use `(batch_id, cluster_id)` as the identity. Regression probes point to the baseline cluster with this composite key. See [`docs/backend-contract.md`](../docs/backend-contract.md) for JSON examples and API response shapes.
+
 Only the "before" batch has its conversations/turns/tool_calls populated — the "after" batch (the simulated fix) only needs its cluster-level stats for the before/after comparison, there's no evidence to drill into for it.
 
 ## Regenerating
