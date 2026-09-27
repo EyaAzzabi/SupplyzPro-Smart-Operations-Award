@@ -1,0 +1,249 @@
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.charts-grid > * {
+  min-width: 0;
+}
+
+.chart-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.1rem 1.15rem 0.9rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 24px -16px rgba(15, 23, 42, 0.25);
+  overflow: hidden;
+}
+
+.chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.35rem;
+}
+
+.chart-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.chart-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.chart-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.chart-dot--failed {
+  background: #7c3aed;
+}
+
+.chart-dot--all {
+  background: #cbd5e1;
+}
+
+.chart-body {
+  min-width: 0;
+  margin-top: 0.4rem;
+  overflow-x: hidden;
+}
+
+.chart-body--donut {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.donut-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.donut-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.donut-center-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.donut-center-label {
+  margin-top: 0.15rem;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 0 0 124px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.donut-legend-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #475569;
+}
+
+.donut-legend-dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  transform: translateY(1px);
+}
+
+.donut-legend-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.donut-legend-pct {
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tooltip {
+  padding: 0.5rem 0.65rem;
+  background: #0f172a;
+  border-radius: 8px;
+  box-shadow: 0 12px 28px -14px rgba(15, 23, 42, 0.7);
+  font-size: 0.76rem;
+  color: #e2e8f0;
+}
+
+.chart-tooltip-label {
+  margin: 0 0 0.3rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.1rem 0;
+}
+
+.chart-tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.chart-tooltip-name {
+  flex: 1 1 auto;
+  color: #94a3b8;
+}
+
+.chart-tooltip-share {
+  margin: 0.25rem 0 0;
+  color: #94a3b8;
+}
+
+@media (max-width: 1200px) {
+  .chart-body--donut {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .donut-legend {
+    flex: 0 0 auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid #eef2f7;
+  }
+}
+
+@media (max-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .chart-head {
+    flex-direction: column;
+  }
+
+  .chart-title {
+    font-size: 0.95rem;
+  }
+
+  .donut-legend {
+    justify-content: center;
+    gap: 0.35rem 1rem;
+  }
+
+  .donut-legend-item {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .chart-card {
+    padding: 1rem 0.9rem 0.85rem;
+  }
+}

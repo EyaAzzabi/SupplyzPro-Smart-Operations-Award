@@ -1,38 +1,95 @@
+import "./ClusterTable.css";
+
 const SEVERITY_LABEL = { 1: "Low", 2: "Medium", 3: "High" };
 
+function scoreTier(score) {
+  if (score > 70) return { tone: "critical", label: "Critique" };
+  if (score >= 30) return { tone: "medium", label: "Moyen" };
+  return { tone: "low", label: "Faible" };
+}
+
+function prettifyType(failureType) {
+  return String(failureType ?? "")
+    .split("_")
+    .filter(Boolean)
+    .map((word, i) => (i === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word))
+    .join(" ");
+}
+
 export default function ClusterTable({ clusters, selectedId, onSelect }) {
+  if (!clusters || clusters.length === 0) {
+    return <p className="cluster-empty">No failure clusters detected for this batch yet.</p>;
+  }
+
+  const maxFrequency = Math.max(...clusters.map((c) => c.frequency), 1);
+
   return (
-    <table className="cluster-table">
-      <thead>
-        <tr>
-          <th>Cluster</th>
-          <th>Frequency</th>
-          <th>Severity</th>
-          <th>Blast radius</th>
-          <th>Priority score</th>
-          <th>Workflows</th>
-        </tr>
-      </thead>
-      <tbody>
-        {clusters.map((c) => (
-          <tr
-            key={c.cluster_id}
-            className={c.cluster_id === selectedId ? "selected" : ""}
-            onClick={() => onSelect(c.cluster_id)}
-          >
-            <td className="label-cell">{c.label}</td>
-            <td>{c.frequency}</td>
-            <td>
-              <span className={`severity-pill severity-${c.severity}`}>
-                {SEVERITY_LABEL[c.severity] || c.severity}
-              </span>
-            </td>
-            <td>{c.blast_radius}</td>
-            <td className="score-cell">{c.priority_score}</td>
-            <td>{c.workflows_touched.join(", ")}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="cluster-list">
+      <div className="cluster-header-row" aria-hidden="true">
+        <span>ID</span>
+        <span>Type d'échec</span>
+        <span>Cause racine</span>
+        <span className="is-numeric">Score</span>
+        <span className="is-numeric">Occurrences</span>
+      </div>
+
+      <ul className="cluster-body">
+        {clusters.map((cluster, index) => {
+          const tier = scoreTier(cluster.priority_score);
+          const isSelected = cluster.cluster_id === selectedId;
+
+          return (
+            <li key={cluster.cluster_id} className="cluster-item">
+              <div
+                className={`cluster-row${isSelected ? " is-selected" : ""}`}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSelected}
+                data-cluster-id={cluster.cluster_id}
+                onClick={() => onSelect(cluster.cluster_id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelect(cluster.cluster_id);
+                  }
+                }}
+              >
+                <span className="cluster-cell cluster-cell-rank">#{index + 1}</span>
+
+                <span className="cluster-cell cluster-cell-type">{cluster.label}</span>
+
+                <span className="cluster-cell cluster-cell-meta">
+                  <span className={`severity-pill severity-${cluster.severity}`}>
+                    {SEVERITY_LABEL[cluster.severity] || cluster.severity}
+                  </span>
+                  <span className="cluster-workflows">{cluster.workflows_touched.join(" · ")}</span>
+                </span>
+
+                <span className="cluster-cell cluster-cell-root">
+                  <span className="cluster-root-tag">{prettifyType(cluster.failure_type)}</span>
+                </span>
+
+                <span className="cluster-cell cluster-cell-score">
+                  <span className={`priority-badge priority-${tier.tone}`}>
+                    <span className="priority-value">{cluster.priority_score}</span>
+                    <span className="priority-label">{tier.label}</span>
+                  </span>
+                </span>
+
+                <span className="cluster-cell cluster-cell-freq">
+                  <span className="cluster-freq-value">{cluster.frequency}</span>
+                  <span className="cluster-freq-track" aria-hidden="true">
+                    <span
+                      className="cluster-freq-fill"
+                      style={{ width: `${Math.max(6, (cluster.frequency / maxFrequency) * 100)}%` }}
+                    />
+                  </span>
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
