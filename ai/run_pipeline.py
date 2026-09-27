@@ -17,8 +17,8 @@ Run: python -m ai.run_pipeline
 import json
 from pathlib import Path
 
-from ai.cluster import cluster_instances
 from ai.failure_detective import detect_failures
+from ai.pattern_hunter import find_patterns
 from ai.prioritize import prioritize
 from ai.regression_probes import generate_and_run_probes
 from ai.trace_investigator import normalize_traces
@@ -32,11 +32,11 @@ def detect_all(conversation):
     return detect_failures(conversation)
 
 
-def process_batch(conversations):
+def process_batch(conversations, batch_id):
     instances = []
     for conv in conversations:
         instances.extend(detect_all(conv))
-    clusters = prioritize(cluster_instances(instances))
+    clusters = prioritize(find_patterns(instances, batch_id=batch_id))
     return clusters
 
 
@@ -50,8 +50,8 @@ def main():
     before = normalize_traces(json.loads((DATA_DIR / "conversations_before.json").read_text()))
     after = normalize_traces(json.loads((DATA_DIR / "conversations_after.json").read_text()))
 
-    clusters_before = process_batch(before)
-    clusters_after = process_batch(after)
+    clusters_before = process_batch(before, batch_id="before")
+    clusters_after = process_batch(after, batch_id="after")
 
     evidence_before = build_evidence_index(before)
 

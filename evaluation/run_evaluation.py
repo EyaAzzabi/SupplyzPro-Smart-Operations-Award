@@ -14,8 +14,8 @@ import json
 import time
 from pathlib import Path
 
-from ai.cluster import cluster_instances
 from ai.failure_detective import detect_failures
+from ai.pattern_hunter import find_patterns
 from ai.prioritize import prioritize
 
 ROOT = Path(__file__).parent.parent
@@ -55,7 +55,7 @@ def cluster_pairwise_precision_recall(clusters):
     cluster_of = {}
     for c in clusters:
         for inst in c["instances"]:
-            cluster_of[id(inst)] = c["cluster_id"]
+            cluster_of[id(inst)] = (c["batch_id"], c["cluster_id"])
 
     same_cluster_pairs = 0
     same_cluster_and_same_type = 0
@@ -109,7 +109,7 @@ def measure_latency(conversations):
         instances.extend(detect_all(conv))
     t1 = time.perf_counter()
 
-    clusters = cluster_instances(instances)
+    clusters = find_patterns(instances, batch_id="before")
     t2 = time.perf_counter()
 
     prioritize(clusters)
@@ -149,7 +149,7 @@ def main():
     conversations = json.loads((DATA_DIR / "conversations_before.json").read_text())
 
     latency, instances, raw_clusters = measure_latency(conversations)
-    clusters = prioritize(cluster_instances(instances))
+    clusters = prioritize(find_patterns(instances, batch_id="before"))
 
     instances_by_conv = {}
     for inst in instances:

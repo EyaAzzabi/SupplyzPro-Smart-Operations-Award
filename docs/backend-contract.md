@@ -17,6 +17,7 @@ Regression probes are attached to the baseline cluster they test. Their `batch_i
   "total_conversations": 60,
   "clusters": [
     {
+      "batch_id": "before",
       "cluster_id": 1,
       "failure_type": "retry_loop_duplicate_order",
       "label": "Retry-loop duplicate orders (no idempotency check)",
