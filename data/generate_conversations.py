@@ -318,7 +318,127 @@ def gen_user_frustration(rng, conv_id):
     }
 
 
-def build_batch(seed, n_conversations, retry_loop_bug_present, retry_loop_count, other_failure_count):
+def gen_no_progress_search_loop(rng, conv_id):
+    """A real failure: the agent re-issues the exact same read-only query
+    three times over without ever surfacing an answer to the user -- the
+    tool keeps returning valid data, the agent just never acts on it."""
+    supplier_id = rng.choice(list(SUPPLIERS))
+    supplier_name = SUPPLIERS[supplier_id]
+    lead_time = rng.randint(3, 21)
+
+    def lookup_turn(turn_id, text):
+        return {
+            "turn_id": turn_id, "role": "agent", "text": text,
+            "tool_call": {
+                "tool_name": "get_supplier_info",
+                "parameters": {"supplier_id": supplier_id},
+                "response": {"supplier_id": supplier_id, "name": supplier_name, "lead_time_days": lead_time},
+                "latency_ms": rng.randint(80, 200),
+                "error_code": None,
+            },
+        }
+
+    turns = [
+        {"turn_id": 1, "role": "user", "text": f"What's the lead time for {supplier_name}?"},
+        lookup_turn(2, "Let me check that for you."),
+        lookup_turn(3, "One moment, still checking."),
+        lookup_turn(4, "Just a bit longer, checking again."),
+    ]
+    return {
+        "conversation_id": conv_id,
+        "workflow": "supplier_lookup",
+        "failure_type": "no_progress_search_loop",
+        "turns": turns,
+    }
+
+
+def gen_legitimate_retry(rng, conv_id):
+    """Ambiguous-looking but NOT a failure: the first order attempt fails
+    outright (no order_id returned at all), the agent is transparent about
+    it, and the retry succeeds exactly once -- no duplicate side effect.
+    Exists to prove the detector doesn't flag every retry as a bug."""
+    sku = rng.choice(SKUS)
+    qty = rng.choice([100, 150, 200])
+    supplier_id = rng.choice(list(SUPPLIERS))
+    supplier_name = SUPPLIERS[supplier_id]
+    order_id = _order_id(rng)
+
+    turns = [
+        {"turn_id": 1, "role": "user", "text": f"Order {qty} units of {sku} from {supplier_name}."},
+        {
+            "turn_id": 2, "role": "agent",
+            "text": "One moment, placing the order.",
+            "tool_call": {
+                "tool_name": "create_purchase_order",
+                "parameters": {"sku": sku, "quantity": qty, "supplier_id": supplier_id},
+                "response": {"success": False, "error": "timeout"},
+                "latency_ms": 9000,
+                "error_code": "timeout",
+            },
+        },
+        {
+            "turn_id": 3, "role": "agent",
+            "text": "That timed out with no order created -- retrying now.",
+            "tool_call": {
+                "tool_name": "create_purchase_order",
+                "parameters": {"sku": sku, "quantity": qty, "supplier_id": supplier_id},
+                "response": {"order_id": order_id, "status": "confirmed"},
+                "latency_ms": rng.randint(150, 400),
+                "error_code": None,
+            },
+        },
+        {"turn_id": 4, "role": "agent", "text": f"Order placed for {qty} units of {sku}. Order ID: {order_id}."},
+    ]
+    return {
+        "conversation_id": conv_id,
+        "workflow": "purchase_order",
+        "failure_type": None,
+        "turns": turns,
+    }
+
+
+def gen_self_correction_recovery(rng, conv_id):
+    """Ambiguous-looking but NOT a failure: the agent double-checks its
+    answer with a second identical query before responding, and the final
+    answer is accurate. Two repeated calls is a reasonable double-check;
+    three or more is the no-progress loop above -- the distinction is the
+    point of including this case."""
+    sku = rng.choice(SKUS)
+    qty = rng.randint(10, 200)
+    warehouse = rng.choice(WAREHOUSES)
+
+    def check_turn(turn_id, text):
+        return {
+            "turn_id": turn_id, "role": "agent", "text": text,
+            "tool_call": {
+                "tool_name": "check_inventory",
+                "parameters": {"sku": sku},
+                "response": {"sku": sku, "quantity": qty, "warehouse": warehouse},
+                "latency_ms": rng.randint(80, 200),
+                "error_code": None,
+            },
+        }
+
+    turns = [
+        {"turn_id": 1, "role": "user", "text": f"How many units of {sku} do we have?"},
+        check_turn(2, "Let me check that."),
+        check_turn(3, f"Confirming that count -- yes, {qty} units of {sku} in stock."),
+    ]
+    return {
+        "conversation_id": conv_id,
+        "workflow": "inventory_check",
+        "failure_type": None,
+        "turns": turns,
+    }
+
+
+def build_batch(seed, n_conversations, retry_loop_bug_present, retry_loop_count,
+                other_failure_count, ambiguous_count=0):
+    """`ambiguous_count` seeds legitimate-retry and self-correction-recovery
+    conversations -- cases that look superficially like the failures above
+    but are tagged failure_type=None, so the evidence set proves the
+    detector distinguishes real failures from legitimate retries/recoveries,
+    not just that it can find failures when told to look for one."""
     rng = random.Random(seed)
     workflows = ["inventory_check", "purchase_order", "supplier_lookup", "shipment_tracking"]
     conversations = []
@@ -334,10 +454,14 @@ def build_batch(seed, n_conversations, retry_loop_bug_present, retry_loop_count,
             gen_retry_loop_duplicate_order(rng, next_id(), fixed=not retry_loop_bug_present)
         )
 
-    generators = [gen_silent_tool_failure, gen_hallucinated_tool_result,
-                  gen_wrong_tool_or_target, gen_context_collapse, gen_user_frustration]
+    generators = [gen_silent_tool_failure, gen_hallucinated_tool_result, gen_wrong_tool_or_target,
+                  gen_context_collapse, gen_user_frustration, gen_no_progress_search_loop]
     for i in range(other_failure_count):
         conversations.append(generators[i % len(generators)](rng, next_id()))
+
+    ambiguous_generators = [gen_legitimate_retry, gen_self_correction_recovery]
+    for i in range(ambiguous_count):
+        conversations.append(ambiguous_generators[i % len(ambiguous_generators)](rng, next_id()))
 
     remaining = n_conversations - len(conversations)
     for _ in range(remaining):
@@ -349,12 +473,12 @@ def build_batch(seed, n_conversations, retry_loop_bug_present, retry_loop_count,
 
 def main():
     before = build_batch(
-        seed=42, n_conversations=60,
-        retry_loop_bug_present=True, retry_loop_count=10, other_failure_count=15,
+        seed=42, n_conversations=60, retry_loop_bug_present=True,
+        retry_loop_count=10, other_failure_count=18, ambiguous_count=6,
     )
     after = build_batch(
-        seed=43, n_conversations=60,
-        retry_loop_bug_present=False, retry_loop_count=10, other_failure_count=15,
+        seed=43, n_conversations=60, retry_loop_bug_present=False,
+        retry_loop_count=10, other_failure_count=18, ambiguous_count=6,
     )
 
     (OUT_DIR / "conversations_before.json").write_text(json.dumps(before, indent=2))

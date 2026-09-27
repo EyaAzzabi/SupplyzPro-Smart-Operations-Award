@@ -12,6 +12,7 @@ SEVERITY = {
     "wrong_tool_or_target": 2,         # wrong data used, but no external action taken
     "context_collapse": 2,             # a stated constraint is violated
     "user_frustration_signal": 1,      # inconvenience, no wrong data or action
+    "no_progress_search_loop": 2,      # wastes time/cost, no wrong data reaches the user
 }
 
 

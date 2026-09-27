@@ -82,5 +82,42 @@ def detect_retry_loop_duplicate_order(conversation):
     return instances
 
 
+READ_ONLY_TOOLS = {"check_inventory", "get_supplier_info", "get_shipment_status"}
+
+
+def detect_no_progress_search_loop(conversation, min_repeats=3):
+    """The agent re-issues the exact same read-only query three or more
+    times without ever resolving it -- distinct from a legitimate
+    double-check (two identical calls is normal; three+ is a stuck loop)."""
+    instances = []
+    seen = {}
+    for turn in _tool_turns(conversation):
+        call = turn["tool_call"]
+        if call["tool_name"] not in READ_ONLY_TOOLS:
+            continue
+        key = (call["tool_name"], tuple(sorted(call["parameters"].items())))
+        seen.setdefault(key, []).append(turn["turn_id"])
+
+    for (tool_name, params), turn_ids in seen.items():
+        if len(turn_ids) >= min_repeats:
+            instances.append({
+                "conversation_id": conversation["conversation_id"],
+                "workflow": conversation["workflow"],
+                "detector": "rule:no_progress_search_loop",
+                "failure_type": "no_progress_search_loop",
+                "description": (
+                    f"'{tool_name}' was called {len(turn_ids)} times with identical parameters "
+                    f"({dict(params)}) without the agent ever surfacing an answer -- a stuck "
+                    f"search loop making no progress."
+                ),
+                "evidence_turn_ids": turn_ids,
+            })
+    return instances
+
+
 def run_rule_based(conversation):
-    return detect_silent_tool_failure(conversation) + detect_retry_loop_duplicate_order(conversation)
+    return (
+        detect_silent_tool_failure(conversation)
+        + detect_retry_loop_duplicate_order(conversation)
+        + detect_no_progress_search_loop(conversation)
+    )

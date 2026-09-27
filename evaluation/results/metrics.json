@@ -1,0 +1,33 @@
+{
+  "failure_detection_precision_recall": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 28,
+    "fp": 0,
+    "fn": 0
+  },
+  "cluster_precision_recall": {
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  "root_cause_accuracy": {
+    "accuracy": 1.0,
+    "n": 28
+  },
+  "silent_failure_recall": {
+    "recall": 1.0,
+    "n": 3
+  },
+  "analysis_latency": {
+    "detection_seconds": 0.0015,
+    "clustering_seconds": 1.7496,
+    "prioritization_seconds": 0.0,
+    "total_seconds": 1.7511,
+    "conversations_analyzed": 60
+  },
+  "cost_per_analysis": {
+    "mode": "local-only (offline heuristic judge, no API calls)",
+    "llm_calls": 0,
+    "estimated_cost_usd": 0.0
+  }
+}

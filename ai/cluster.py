@@ -17,6 +17,7 @@ CLUSTER_LABELS = {
     "wrong_tool_or_target": "Wrong tool/target selected (right intent, wrong record)",
     "context_collapse": "Context collapse (earlier constraint silently dropped)",
     "user_frustration_signal": "User-frustration signal (repeated rephrasing)",
+    "no_progress_search_loop": "No-progress search loop (stuck re-querying, never resolved)",
 }
 
 

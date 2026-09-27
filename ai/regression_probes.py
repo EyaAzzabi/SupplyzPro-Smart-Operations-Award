@@ -10,6 +10,7 @@ import random
 from data.generate_conversations import (
     gen_context_collapse,
     gen_hallucinated_tool_result,
+    gen_no_progress_search_loop,
     gen_retry_loop_duplicate_order,
     gen_silent_tool_failure,
     gen_user_frustration,
@@ -26,6 +27,7 @@ GENERATORS = {
     "wrong_tool_or_target": gen_wrong_tool_or_target,
     "context_collapse": gen_context_collapse,
     "user_frustration_signal": gen_user_frustration,
+    "no_progress_search_loop": gen_no_progress_search_loop,
 }
 
 
