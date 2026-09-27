@@ -26,9 +26,27 @@ def _insert_batch(conn, batch_id, results, conversations_by_id):
     for conv_id, conv in conversations_by_id.items():
         conn.execute(
             "INSERT OR REPLACE INTO conversations "
-            "(conversation_id, batch_id, workflow, failure_type, turns_json) VALUES (?, ?, ?, ?, ?)",
-            (conv_id, batch_id, conv["workflow"], conv.get("failure_type"), json.dumps(conv["turns"])),
+            "(conversation_id, batch_id, workflow, failure_type) VALUES (?, ?, ?, ?)",
+            (conv_id, batch_id, conv["workflow"], conv.get("failure_type")),
         )
+        for turn in conv["turns"]:
+            cur = conn.execute(
+                "INSERT INTO turns (conversation_id, batch_id, turn_number, role, text) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (conv_id, batch_id, turn["turn_id"], turn["role"], turn["text"]),
+            )
+            tool_call = turn.get("tool_call")
+            if tool_call:
+                conn.execute(
+                    "INSERT INTO tool_calls "
+                    "(turn_id, tool_name, parameters_json, response_json, latency_ms, error_code, "
+                    "idempotency_key) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        cur.lastrowid, tool_call["tool_name"], json.dumps(tool_call["parameters"]),
+                        json.dumps(tool_call.get("response")), tool_call.get("latency_ms"),
+                        tool_call.get("error_code"), tool_call.get("idempotency_key"),
+                    ),
+                )
 
     for cluster in results["clusters"]:
         conn.execute(

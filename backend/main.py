@@ -76,6 +76,30 @@ def get_clusters(batch: str = "before"):
     ]
 
 
+def _get_turns(conn, conversation_id, batch):
+    rows = conn.execute(
+        "SELECT t.id, t.turn_number, t.role, t.text, "
+        "tc.tool_name, tc.parameters_json, tc.response_json, tc.latency_ms, tc.error_code "
+        "FROM turns t LEFT JOIN tool_calls tc ON tc.turn_id = t.id "
+        "WHERE t.conversation_id = ? AND t.batch_id = ? ORDER BY t.turn_number",
+        (conversation_id, batch),
+    ).fetchall()
+
+    turns = []
+    for r in rows:
+        turn = {"turn_id": r["turn_number"], "role": r["role"], "text": r["text"]}
+        if r["tool_name"] is not None:
+            turn["tool_call"] = {
+                "tool_name": r["tool_name"],
+                "parameters": json.loads(r["parameters_json"]),
+                "response": json.loads(r["response_json"]) if r["response_json"] else None,
+                "latency_ms": r["latency_ms"],
+                "error_code": r["error_code"],
+            }
+        turns.append(turn)
+    return turns
+
+
 @app.get("/api/clusters/{cluster_id}/evidence")
 def get_cluster_evidence(cluster_id: int, batch: str = "before"):
     conn = get_conn()
@@ -92,11 +116,7 @@ def get_cluster_evidence(cluster_id: int, batch: str = "before"):
 
     evidence = []
     for inst in instances:
-        conv_row = conn.execute(
-            "SELECT turns_json FROM conversations WHERE conversation_id = ? AND batch_id = ?",
-            (inst["conversation_id"], batch),
-        ).fetchone()
-        turns = json.loads(conv_row["turns_json"]) if conv_row else []
+        turns = _get_turns(conn, inst["conversation_id"], batch)
         evidence.append({
             "conversation_id": inst["conversation_id"],
             "detector": inst["detector"],
