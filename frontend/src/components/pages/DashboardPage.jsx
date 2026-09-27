@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../../api";
+import ClusterAnalysis from "../ClusterAnalysis";
 import ClusterTable from "../ClusterTable";
 import EvidencePanel from "../EvidencePanel";
 import FailureFamiliesChart from "../FailureFamiliesChart";
@@ -14,8 +15,11 @@ export default function DashboardPage() {
   const [selectedId, setSelectedId] = useState(null);
   const [evidence, setEvidence] = useState(null);
   const [evidenceLoading, setEvidenceLoading] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
   const [error, setError] = useState(null);
   const [evidenceError, setEvidenceError] = useState(null);
+  const [analysisError, setAnalysisError] = useState(null);
 
   useEffect(() => {
     Promise.all([api.summary(), api.clusters(), api.fixComparison()])
@@ -33,6 +37,9 @@ export default function DashboardPage() {
     let active = true;
     setEvidenceLoading(true);
     setEvidenceError(null);
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+
     api
       .clusterEvidence(selectedId)
       .then((data) => {
@@ -44,6 +51,19 @@ export default function DashboardPage() {
       .finally(() => {
         if (active) setEvidenceLoading(false);
       });
+
+    api
+      .clusterAnalysis(selectedId)
+      .then((data) => {
+        if (active) setAnalysis(data);
+      })
+      .catch((err) => {
+        if (active) setAnalysisError(err.message);
+      })
+      .finally(() => {
+        if (active) setAnalysisLoading(false);
+      });
+
     return () => {
       active = false;
     };
@@ -90,6 +110,11 @@ export default function DashboardPage() {
       </section>
 
       <section>
+        <h2>Root cause, impact, and remediation</h2>
+        <ClusterAnalysis analysis={analysis} loading={analysisLoading} error={analysisError} />
+      </section>
+
+      <section>
         <FixComparison data={fixData} />
       </section>
 
@@ -97,7 +122,8 @@ export default function DashboardPage() {
         <strong>Disclosure:</strong> all conversation data shown is synthetic, generated to represent
         plausible SupplyzPro workflows with deliberately seeded failure patterns. AI tools used: an
         LLM-as-judge (NVIDIA NIM-hosted model, or an offline heuristic fallback) for
-        hallucination/wrong-target detection, and TF-IDF/KMeans for root-cause clustering.
+        hallucination/wrong-target detection, and TF-IDF/KMeans for root-cause clustering. NVIDIA
+        Brev: not used — no GPU compute was required for this project.
       </footer>
     </>
   );

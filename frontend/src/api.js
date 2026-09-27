@@ -13,5 +13,7 @@ export const api = {
   clusters: (batch = "before") => get(`/api/clusters?batch=${batch}`),
   clusterEvidence: (clusterId, batch = "before") =>
     get(`/api/clusters/${clusterId}/evidence?batch=${batch}`),
+  clusterAnalysis: (clusterId, batch = "before") =>
+    get(`/api/clusters/${clusterId}/analysis?batch=${batch}`),
   fixComparison: () => get("/api/fix-comparison"),
 };

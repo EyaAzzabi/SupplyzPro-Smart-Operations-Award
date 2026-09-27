@@ -13,6 +13,10 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from ai.impact import assess_impact
+from ai.remediation import recommend_remediation
+from ai.root_cause import analyze_root_cause
+
 ROOT = Path(__file__).parent
 RESULTS_DIR = ROOT / "results"
 
@@ -91,6 +95,28 @@ def main():
         with st.expander(f"{instance['conversation_id']} — {instance['description']}"):
             conv = conversations_by_id[instance["conversation_id"]]
             render_transcript(conv, set(instance["evidence_turn_ids"]))
+
+    st.subheader("Root cause, impact, and remediation")
+    rc = analyze_root_cause(selected_cluster["failure_type"])
+    impact = assess_impact(selected_cluster)
+    remediation = recommend_remediation(selected_cluster["failure_type"])
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"**Root cause** ({rc['confidence'].replace('_', ' ')}): {rc['root_cause']}")
+        for step in rc["causal_chain"]:
+            st.markdown(f"- *{step['stage'].replace('_', ' ')}*: {step['description']}")
+    with col2:
+        st.markdown("**Observed impact:**")
+        for item in impact["observed_impact"]:
+            st.markdown(f"- {item}")
+        st.markdown("**Potential impact:**")
+        for item in impact["potential_impact"]:
+            st.markdown(f"- {item}")
+
+    st.markdown("**Recommended fixes:**")
+    for r in remediation:
+        st.markdown(f"- `{r['layer']}` ({r['priority']} priority): {r['recommendation']}")
 
     if probes:
         st.subheader("Closing the loop: did the fix work?")

@@ -7,9 +7,13 @@
   5. for the top "before" cluster: generate regression probes and verify
      the detector catches them, and compare that cluster's frequency
      before vs. after the simulated fix
+  6. for every "before" cluster: root cause, impact, and remediation
+     (ai/root_cause.py, ai/impact.py, ai/remediation.py), assembled into
+     an executive report (ai/executive_report.py)
 
-Writes results/results_before.json, results/results_after.json, and
-results/regression_probes.json for the Streamlit dashboard to read.
+Writes results/results_before.json, results/results_after.json,
+results/regression_probes.json, and results/executive_report.{json,md}
+for the dashboard and submission package to read.
 
 Run: python -m ai.run_pipeline
 """
@@ -19,6 +23,7 @@ from pathlib import Path
 
 from ai.behavioral import run_behavioral
 from ai.cluster import cluster_instances
+from ai.executive_report import build_executive_report, render_markdown
 from ai.llm_judge import run_llm_judge
 from ai.prioritize import prioritize
 from ai.regression_probes import generate_and_run_probes
@@ -85,6 +90,10 @@ def main():
                 for p in probe_result["probes"]
             ],
         }, indent=2))
+
+    report = build_executive_report(clusters_before, len(before))
+    (RESULTS_DIR / "executive_report.json").write_text(json.dumps(report, indent=2))
+    (RESULTS_DIR / "executive_report.md").write_text(render_markdown(report))
 
     print(f"before: {len(before)} conversations -> {len(clusters_before)} clusters")
     print(f"after:  {len(after)} conversations -> {len(clusters_after)} clusters")

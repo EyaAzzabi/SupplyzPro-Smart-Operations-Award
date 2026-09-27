@@ -62,7 +62,11 @@ export default function App() {
     <Layout activePage={activePage} onNavigate={setActivePage}>
       <div className="app">
         <Header pageLabel={page.label} title={page.title} subtitle={page.subtitle} />
-        {page.placeholder ? <PageComponent onBack={() => setActivePage("dashboard")} /> : <PageComponent />}
+        {page.placeholder ? (
+          <PageComponent onBack={() => setActivePage("dashboard")} />
+        ) : (
+          <PageComponent />
+        )}
       </div>
     </Layout>
   );

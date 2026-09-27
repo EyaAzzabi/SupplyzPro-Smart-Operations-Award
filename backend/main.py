@@ -11,6 +11,10 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from ai.impact import assess_impact
+from ai.remediation import recommend_remediation
+from ai.root_cause import analyze_root_cause
+
 DB_PATH = Path(__file__).parent.parent / "database" / "xray.db"
 
 app = FastAPI(title="X-Ray API")
@@ -130,6 +134,33 @@ def get_cluster_evidence(cluster_id: int, batch: str = "before"):
         "cluster_id": cluster["cluster_id"],
         "label": cluster["label"],
         "instances": evidence,
+    }
+
+
+@app.get("/api/clusters/{cluster_id}/analysis")
+def get_cluster_analysis(cluster_id: int, batch: str = "before"):
+    conn = get_conn()
+    cluster = conn.execute(
+        "SELECT * FROM clusters WHERE cluster_id = ? AND batch_id = ?", (cluster_id, batch)
+    ).fetchone()
+    conn.close()
+    if cluster is None:
+        raise HTTPException(status_code=404, detail="Cluster not found")
+
+    cluster_dict = {
+        "failure_type": cluster["failure_type"],
+        "frequency": cluster["frequency"],
+        "severity": cluster["severity"],
+        "blast_radius": cluster["blast_radius"],
+        "priority_score": cluster["priority_score"],
+        "workflows_touched": cluster["workflows_touched"].split(","),
+    }
+    return {
+        "cluster_id": cluster["cluster_id"],
+        "label": cluster["label"],
+        "root_cause": analyze_root_cause(cluster["failure_type"]),
+        "impact": assess_impact(cluster_dict),
+        "remediation": recommend_remediation(cluster["failure_type"]),
     }
 
 
